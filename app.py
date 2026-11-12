@@ -130,15 +130,27 @@ else:
         st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
         run_cat = st.button("Run Audit", use_container_width=True)
 
+    # Optional Warehouse Configuration directly in the UI
+    env_wh = os.environ.get("DATABRICKS_WAREHOUSE_ID", "")
+    with st.expander("⚙️ Databricks SQL Warehouse Settings (Click to configure or view status)", expanded=(not env_wh and "custom_wh_id" not in st.session_state)):
+        wh_input = st.text_input(
+            "SQL Warehouse ID (e.g. 16-character ID from Connection Details):",
+            value=st.session_state.get("custom_wh_id", env_wh),
+            placeholder="e.g. 2f4a1b8c9d0e1234 or /sql/1.0/warehouses/...",
+            help="Found in Databricks -> SQL Warehouses -> Select your warehouse -> Connection Details tab -> Warehouse ID"
+        )
+        if wh_input:
+            st.session_state["custom_wh_id"] = wh_input.strip()
+
+    active_wh_id = st.session_state.get("custom_wh_id", env_wh)
     source_display_name = f"Unity Catalog: {selected_cat}.{selected_sch}.{selected_tbl}"
-    active_df, err_notice = data_service.load_catalog_table_data(selected_cat, selected_sch, selected_tbl, limit=max_rows)
+    active_df, err_notice = data_service.load_catalog_table_data(selected_cat, selected_sch, selected_tbl, limit=max_rows, warehouse_id=active_wh_id)
     
     if active_df is None or active_df.empty:
         active_df = data_service.get_default_allianz_dataset()
 
     if err_notice:
-        with st.expander("ℹ️ Databricks SQL Warehouse Status", expanded=False):
-            st.info(f"Databricks SQL Warehouse notice: {err_notice}\n\nRendering schema-matched dataset for '{selected_cat}.{selected_sch}.{selected_tbl}'.")
+        st.info(f"💡 Notice: Databricks SQL Warehouse status: {err_notice}\n\nDisplaying realistic schema data for '{selected_cat}.{selected_sch}.{selected_tbl}'.")
 
 st.markdown("</div>", unsafe_allow_html=True)
 

@@ -64,6 +64,8 @@ def get_current_user_context() -> Dict[str, Any]:
         host = headers["host"]
         
     warehouse_id = os.environ.get("DATABRICKS_WAREHOUSE_ID", "")
+    if not warehouse_id and st is not None and hasattr(st, "session_state") and "custom_wh_id" in st.session_state:
+        warehouse_id = st.session_state["custom_wh_id"]
     
     if obo_token:
         masked_token = obo_token[:6] + "..." + obo_token[-4:] if len(obo_token) > 10 else "******"

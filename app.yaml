@@ -7,4 +7,6 @@ command: [
   "--server.address",
   "0.0.0.0"
 ]
-
+env:
+  - name: "DATABRICKS_WAREHOUSE_ID"
+    value: "" # Optional: Enter your 16-character SQL Warehouse ID here
