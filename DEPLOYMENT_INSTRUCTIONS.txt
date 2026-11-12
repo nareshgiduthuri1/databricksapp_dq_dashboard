@@ -90,8 +90,9 @@ Step 8: Click "Deploy".
 
 - app.py: Complete white executive dashboard (Streamlit).
 - obo_auth.py: Automated OBO user token extractor (zero token setup).
-- data_service.py: 10 Enterprise Data Quality validations engine.
-- styles.py: Corporate typography and strict Green/Red styling.
+- data_service.py: 10 Enterprise Data Quality validations engine + built-in sample data.
+- styles.py: Corporate typography, forced light widget themes, and strict Green/Red styling.
+- .streamlit/config.toml: Forces Streamlit light theme on Azure Databricks Apps.
 - sample_customers.csv: Sample CSV file for testing manual uploads.
 - app.yaml: Databricks Apps configuration (runs on port 8000).
 - requirements.txt: Python dependencies for Databricks runtime.

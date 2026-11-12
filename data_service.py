@@ -27,6 +27,31 @@ EMAIL_REGEX = re.compile(r"^[\w\.-]+@[\w\.-]+\.[a-zA-Z]{2,}$")
 PLACEHOLDER_STRINGS = {"n/a", "na", "null", "none", "-", "?", "unknown", "undefined", ""}
 
 
+def get_default_allianz_dataset() -> pd.DataFrame:
+    """Returns guaranteed Allianz dataset so dashboard is never empty on load."""
+    import os
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    sample_file = os.path.join(current_dir, "sample_customers.csv")
+    if os.path.exists(sample_file):
+        try:
+            return pd.read_csv(sample_file)
+        except Exception:
+            pass
+
+    # Built-in robust fallback
+    return pd.DataFrame({
+        "customer_id": ["CUST_1001", "CUST_1002", "CUST_1003", "CUST_1004", "CUST_1005", "CUST_1006", "CUST_1007", "CUST_1008", "CUST_1009", "CUST_1010", "CUST_1001", "CUST_1012", "CUST_1013", "CUST_1014", "CUST_1015"],
+        "full_name": ["Acme Corporation", "Global Logistics", "Starlight Media", "Apex Financials", "Nexus Tech Labs", "Summit Retail", "Horizon Energy", "Pioneer Healthcare", "Vanguard Industrial", "Cascade Cloud", "Acme Corporation", "Quantum Dynamics", "Beacon Security", "Solaris Agriculture", "Echo Wave Telecom"],
+        "email_address": ["contact@acme.com", "info@globallogistics.com", "invalid-email-format", "billing@apexfin.com", "hello@nexustech.io", "support@summitretail.com", "contact@horizonenergy.com", None, "ops@vanguardind.com", "admin@cascadecloud.net", "contact@acme.com", "info@quantumdyn.com", "alerts@beaconsec.com", "contact@solaris", "support@echowave.com"],
+        "phone_number": ["+1-555-0192", "+1-555-0193", "+44-20-7946-0912", "+1-555-0195", None, "+1-555-0197", "+33-1-40-50-60", "+1-555-0199", "+49-30-123456", "+1-555-0201", "+1-555-0192", None, "+1-555-0204", None, "+1-555-0206"],
+        "country": ["USA", "Germany", "UK", "USA", "Germany", "USA", "France", "USA", "Germany", "USA", "USA", "Japan", "N/A", "Australia", "USA"],
+        "annual_revenue": [1250000, 840000, 450000, -15000, 2100000, 320000, 5600000, 980000, 1750000, 640000, 1250000, 3400000, 410000, 890000, 1120000],
+        "credit_score": [740, 680, 710, 620, 790, 590, 820, 705, 980, 670, 740, 775, 650, 695, 715],
+        "signup_date": ["2024-01-15", "2024-02-20", "2024-03-05", "2024-03-12", "2024-04-01", "2024-04-18", "2024-05-02", "2024-05-19", "2024-06-11", "2028-05-10", "2024-01-15", "2024-07-04", "2024-07-22", "2024-08-14", "2024-08-30"],
+        "status": ["Active", "Active", "Active", "Active", "Active", "Pending", "Active", "Active", "Active", "Active", "Active", "Active", "Pending", "Active", "Active"]
+    })
+
+
 def run_comprehensive_dq_checks(df: pd.DataFrame, source_name: str = "Uploaded Dataset") -> Dict[str, Any]:
     """
     Executes 10 core DQ checks against any DataFrame.

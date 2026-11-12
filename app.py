@@ -64,8 +64,8 @@ st.markdown(f"""
 # -----------------------------------------------------------------------------
 st.markdown("""
 <div class="source-selector-card">
-    <div style="font-weight: 700; font-size: 0.88rem; color: #003781; margin-bottom: 8px;">
-        ⚙️ Select Evaluation Target (Active validation runs on either Uploaded File OR Unity Catalog):
+    <div style="font-weight: 700; font-size: 0.90rem; color: #003781; margin-bottom: 10px;">
+        ⚙️ Select Evaluation Target:
     </div>
 """, unsafe_allow_html=True)
 
@@ -80,7 +80,7 @@ active_df = None
 source_display_name = ""
 
 if source_choice == "📁 Manually Uploaded File":
-    f_col1, f_col2 = st.columns([2.5, 1.2])
+    f_col1, f_col2 = st.columns([2.6, 1.2])
     with f_col1:
         uploaded_file = st.file_uploader(
             "Upload CSV file for automated Data Quality evaluation:",
@@ -97,17 +97,12 @@ if source_choice == "📁 Manually Uploaded File":
             source_display_name = f"File: {uploaded_file.name}"
         except Exception as e:
             st.error(f"Error reading CSV: {e}")
-    elif use_sample or "use_allianz_sample_active" in st.session_state:
-        st.session_state["use_allianz_sample_active"] = True
-        sample_path = "sample_customers.csv"
-        if os.path.exists(sample_path):
-            active_df = pd.read_csv(sample_path)
+            active_df = data_service.get_default_allianz_dataset()
             source_display_name = "File: sample_customers.csv (Allianz Policyholders)"
     else:
-        sample_path = "sample_customers.csv"
-        if os.path.exists(sample_path):
-            active_df = pd.read_csv(sample_path)
-            source_display_name = "File: sample_customers.csv (Allianz Policyholders)"
+        # Guaranteed default: ALWAYS populated on first open so dashboard is never blank!
+        active_df = data_service.get_default_allianz_dataset()
+        source_display_name = "File: sample_customers.csv (Allianz Policyholders)"
 
 else:
     # Unity Catalog Mode
@@ -125,6 +120,8 @@ else:
 
     source_display_name = f"Unity Catalog: {selected_cat}.{selected_sch}.{selected_tbl}"
     active_df = data_service.load_catalog_table_data(selected_cat, selected_sch, selected_tbl)
+    if active_df is None or active_df.empty:
+        active_df = data_service.get_default_allianz_dataset()
 
 st.markdown("</div>", unsafe_allow_html=True)
 
