@@ -130,19 +130,35 @@ else:
         st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
         run_cat = st.button("Run Audit", use_container_width=True)
 
-    # Optional Warehouse Configuration directly in the UI
+    # SQL Warehouse Settings & Diagnostics
     env_wh = os.environ.get("DATABRICKS_WAREHOUSE_ID", "")
-    with st.expander("⚙️ Databricks SQL Warehouse Settings (Click to configure or view status)", expanded=(not env_wh and "custom_wh_id" not in st.session_state)):
-        wh_input = st.text_input(
-            "SQL Warehouse ID (e.g. 16-character ID from Connection Details):",
-            value=st.session_state.get("custom_wh_id", env_wh),
-            placeholder="e.g. 2f4a1b8c9d0e1234 or /sql/1.0/warehouses/...",
-            help="Found in Databricks -> SQL Warehouses -> Select your warehouse -> Connection Details tab -> Warehouse ID"
-        )
-        if wh_input:
-            st.session_state["custom_wh_id"] = wh_input.strip()
+    with st.expander("⚙️ Databricks SQL Warehouse Settings & Diagnostics", expanded=(not env_wh and "custom_wh_id" not in st.session_state)):
+        w_col1, w_col2 = st.columns([2.5, 1.2])
+        with w_col1:
+            wh_input = st.text_input(
+                "SQL Warehouse ID (e.g. 16-character ID from Connection Details):",
+                value=st.session_state.get("custom_wh_id", env_wh),
+                placeholder="e.g. 2f4a1b8c9d0e1234",
+                help="Found in Databricks -> SQL Warehouses -> Select your warehouse -> Connection Details tab -> Warehouse ID"
+            )
+            if wh_input:
+                st.session_state["custom_wh_id"] = wh_input.strip()
+        with w_col2:
+            st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
+            test_btn = st.button("⚡ Test Warehouse Connection", use_container_width=True)
 
-    active_wh_id = st.session_state.get("custom_wh_id", env_wh)
+        active_wh_id = st.session_state.get("custom_wh_id", env_wh)
+        resolved_host = obo_auth.get_workspace_host()
+        st.caption(f"🌐 Resolved Workspace Host: `{resolved_host}` | HTTP Path: `/sql/1.0/warehouses/{active_wh_id or 'NOT_SET'}`")
+
+        if test_btn:
+            with st.spinner("Testing connection to Databricks SQL Warehouse..."):
+                diag = obo_auth.test_warehouse_connection(active_wh_id)
+                if diag["success"]:
+                    st.success(f"✅ {diag['message']}")
+                else:
+                    st.error(f"❌ Connection Failed: {diag['message']}")
+
     source_display_name = f"Unity Catalog: {selected_cat}.{selected_sch}.{selected_tbl}"
     active_df, err_notice = data_service.load_catalog_table_data(selected_cat, selected_sch, selected_tbl, limit=max_rows, warehouse_id=active_wh_id)
     

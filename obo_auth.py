@@ -10,6 +10,7 @@ that logged-in user, enforcing Unity Catalog Row-Level Security and Column Maski
 """
 
 import os
+import re
 from typing import Dict, Any, Optional, List, Tuple
 import pandas as pd
 
@@ -31,6 +32,43 @@ def get_obo_headers() -> Dict[str, str]:
     except Exception:
         pass
     return headers
+
+
+def get_workspace_host() -> str:
+    """
+    Resolves the real Databricks workspace hostname (e.g. adb-3649210770249640.0.azuredatabricks.net).
+    Crucial fix: Never use the app URL domain (which is only the web frontend container).
+    """
+    # 1. Try databricks.sdk.core Config
+    try:
+        from databricks.sdk.core import Config
+        cfg = Config()
+        if cfg.host:
+            clean_host = cfg.host.replace("https://", "").replace("http://", "").split("/")[0].split(":")[0]
+            if "azure.databricksapps.com" not in clean_host and clean_host:
+                return clean_host
+    except Exception:
+        pass
+
+    # 2. Try DATABRICKS_HOST env var
+    env_host = os.environ.get("DATABRICKS_HOST", "")
+    if env_host:
+        clean_env = env_host.replace("https://", "").replace("http://", "").split("/")[0].split(":")[0]
+        if "azure.databricksapps.com" not in clean_env and clean_env:
+            return clean_env
+
+    # 3. Automatically extract Azure Databricks Workspace ID from the App URL headers!
+    # Example URL: data-quality-dashboard-3649210770249640.0.azure.databricksapps.com
+    headers = get_obo_headers()
+    app_host = headers.get("host", "")
+    if "azure.databricksapps.com" in app_host:
+        match = re.search(r"(\d+(\.\d+)?)\.azure\.databricksapps\.com", app_host)
+        if match:
+            ws_id = match.group(1)
+            return f"adb-{ws_id}.azuredatabricks.net"
+
+    # Default fallback workspace host
+    return "adb-3649210770249640.0.azuredatabricks.net"
 
 
 def get_current_user_context() -> Dict[str, Any]:
@@ -58,10 +96,7 @@ def get_current_user_context() -> Dict[str, Any]:
         or os.environ.get("DATABRICKS_USER")
     )
     
-    # Databricks Apps automatically provides DATABRICKS_HOST in the container environment
-    host = os.environ.get("DATABRICKS_HOST", "")
-    if not host and "host" in headers:
-        host = headers["host"]
+    host = get_workspace_host()
         
     warehouse_id = os.environ.get("DATABRICKS_WAREHOUSE_ID", "")
     if not warehouse_id and st is not None and hasattr(st, "session_state") and "custom_wh_id" in st.session_state:
@@ -84,8 +119,8 @@ def get_current_user_context() -> Dict[str, Any]:
         return {
             "mode": "OBO Simulation (Demo Mode)",
             "is_obo": True,
-            "user_email": "naresh.giduthuri@allianz.com",
-            "host": host or "https://adb-allianz-lakehouse.azuredatabricks.net",
+            "user_email": user_email or "naresh.giduthuri@allianz.com",
+            "host": host,
             "warehouse_id": warehouse_id or "allianz_dq_warehouse",
             "token": None,
             "token_masked": "obo_ephemeral_token",
@@ -103,11 +138,10 @@ def get_workspace_client(user_ctx: Optional[Dict[str, Any]] = None):
         if user_ctx is None:
             user_ctx = get_current_user_context()
         token = user_ctx.get("token")
-        raw_host = user_ctx.get("host") or os.environ.get("DATABRICKS_HOST", "")
+        host = get_workspace_host()
         
-        if token and raw_host:
-            host = raw_host if raw_host.startswith("http") else f"https://{raw_host}"
-            return WorkspaceClient(host=host, token=token)
+        if token and host:
+            return WorkspaceClient(host=f"https://{host}", token=token)
         return WorkspaceClient()
     except Exception:
         return None
@@ -137,13 +171,12 @@ def fetch_live_schemas(catalog: str = "samples", user_ctx: Optional[Dict[str, An
     Dynamically lists all schemas inside the specified catalog via Databricks SDK REST API or SQL.
     Does NOT require a running SQL warehouse when using Databricks SDK!
     """
-    # 1. Try Databricks SDK REST API (Fastest, zero-warehouse needed)
+    # 1. Try Databricks SDK REST API
     try:
         w = get_workspace_client(user_ctx)
         if w:
             schemas = [s.name for s in w.schemas.list(catalog_name=catalog)]
             if schemas:
-                # Filter out system internal schemas if any
                 return sorted([s for s in schemas if not s.startswith("_")])
     except Exception:
         pass
@@ -157,7 +190,7 @@ def fetch_live_schemas(catalog: str = "samples", user_ctx: Optional[Dict[str, An
     except Exception:
         pass
 
-    # 3. Fallback for offline/demo or catalog='samples'
+    # 3. Fallback for 'samples'
     if catalog.lower() == "samples":
         return ["nyctaxi", "tpch", "tpcds", "bike_sharing", "accidents"]
     return ["default", "public"]
@@ -186,7 +219,6 @@ def fetch_live_tables(catalog: str = "samples", schema: str = "nyctaxi", user_ct
     except Exception:
         pass
 
-    # 3. Fallback for offline/demo or catalog='samples'
     fallback_map = {
         "nyctaxi": ["trips"],
         "tpch": ["customer", "orders", "lineitem", "nation", "part", "partsupp", "region", "supplier"],
@@ -195,6 +227,75 @@ def fetch_live_tables(catalog: str = "samples", schema: str = "nyctaxi", user_ct
         "accidents": ["us_accidents"]
     }
     return fallback_map.get(schema.lower(), ["sample_table_1", "sample_table_2"])
+
+
+def test_warehouse_connection(warehouse_id: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Diagnostic tool: Runs a lightweight query (SELECT current_user()) to verify
+    the connection and reports exact status/errors in plain English.
+    """
+    host = get_workspace_host()
+    user_ctx = get_current_user_context()
+    token = user_ctx.get("token")
+    wh_id = warehouse_id or user_ctx.get("warehouse_id") or os.environ.get("DATABRICKS_WAREHOUSE_ID", "")
+    
+    clean_wh_id = wh_id.replace("/sql/1.0/warehouses/", "").strip()
+    http_path = f"/sql/1.0/warehouses/{clean_wh_id}" if clean_wh_id else ""
+
+    result = {
+        "host": host,
+        "token_detected": bool(token),
+        "token_len": len(token) if token else 0,
+        "warehouse_id": clean_wh_id,
+        "http_path": http_path,
+        "success": False,
+        "message": ""
+    }
+
+    if not clean_wh_id:
+        result["message"] = "SQL Warehouse ID is missing. Please enter your 16-character SQL Warehouse ID."
+        return result
+
+    # Test 1: databricks-sql-connector
+    try:
+        from databricks import sql
+        conn = sql.connect(
+            server_hostname=host,
+            http_path=http_path,
+            access_token=token
+        )
+        cursor = conn.cursor()
+        cursor.execute("SELECT current_user() AS usr, current_timestamp() AS ts")
+        row = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        result["success"] = True
+        result["message"] = f"Connected successfully! Authenticated as: {row[0]} | Server Timestamp: {row[1]}"
+        return result
+    except Exception as e:
+        err1 = str(e)
+
+    # Test 2: databricks-sdk statement execution
+    try:
+        w = get_workspace_client(user_ctx)
+        if w:
+            res = w.statement_execution.execute_statement(
+                warehouse_id=clean_wh_id,
+                statement="SELECT current_user() AS usr, current_timestamp() AS ts",
+                wait_timeout="20s"
+            )
+            if res.result and res.result.data_array:
+                row = res.result.data_array[0]
+                result["success"] = True
+                result["message"] = f"Connected successfully via Databricks SDK! Authenticated as: {row[0]}"
+                return result
+            elif res.status and res.status.error:
+                err1 += f" | SDK: {res.status.error.message}"
+    except Exception as e2:
+        err1 += f" | SDK execution notice: {e2}"
+
+    result["message"] = err1
+    return result
 
 
 def execute_unity_catalog_sql(
@@ -210,32 +311,16 @@ def execute_unity_catalog_sql(
         user_ctx = get_current_user_context()
 
     token = user_ctx.get("token")
-    raw_host = user_ctx.get("host") or os.environ.get("DATABRICKS_HOST", "")
-    host = raw_host.replace("https://", "").replace("http://", "").split("/")[0]
+    host = get_workspace_host()
 
-    # Resolve warehouse ID & HTTP Path
     wh_id = warehouse_id or user_ctx.get("warehouse_id") or os.environ.get("DATABRICKS_WAREHOUSE_ID", "")
-    http_path = os.environ.get("DATABRICKS_HTTP_PATH", "")
+    clean_wh_id = wh_id.replace("/sql/1.0/warehouses/", "").strip()
+    http_path = f"/sql/1.0/warehouses/{clean_wh_id}" if clean_wh_id else ""
 
-    if not http_path and wh_id:
-        http_path = f"/sql/1.0/warehouses/{wh_id}"
+    if not clean_wh_id:
+        return None, "SQL Warehouse ID is not configured. Please enter your Warehouse ID in the settings box."
 
-    # If HTTP path is still unknown, try listing warehouses via Databricks SDK
-    if not http_path:
-        wh_list = get_available_warehouses(user_ctx)
-        if wh_list:
-            wh_id = wh_list[0]["id"]
-            http_path = f"/sql/1.0/warehouses/{wh_id}"
-
-    if not token:
-        return None, "No active Databricks OBO authentication token detected."
-
-    if not host:
-        return None, "No Databricks workspace host detected."
-
-    if not http_path:
-        return None, "No active SQL Warehouse configured. Please specify a Warehouse ID."
-
+    # 1. Try databricks-sql-connector
     try:
         from databricks import sql
         conn = sql.connect(
@@ -252,4 +337,24 @@ def execute_unity_catalog_sql(
         conn.close()
         return df, None
     except Exception as e:
-        return None, str(e)
+        err1 = str(e)
+
+    # 2. Try databricks-sdk statement execution
+    try:
+        w = get_workspace_client(user_ctx)
+        if w:
+            res = w.statement_execution.execute_statement(
+                warehouse_id=clean_wh_id,
+                statement=query,
+                wait_timeout="45s"
+            )
+            if res.result and res.result.data_array:
+                cols = [c.name for c in res.manifest.schema.columns]
+                df = pd.DataFrame(res.result.data_array, columns=cols)
+                return df, None
+            elif res.status and res.status.error:
+                return None, f"Databricks SQL error: {res.status.error.message}"
+    except Exception as e2:
+        return None, f"{err1} (SDK: {e2})"
+
+    return None, err1
