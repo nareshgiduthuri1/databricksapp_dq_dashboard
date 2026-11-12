@@ -16,7 +16,7 @@ Strict Rule: Any check with failures > 0 is FAILED (Red), otherwise PASSED (Gree
 Includes Root-Cause Diagnosis and Automated Databricks SQL Remediation Generator.
 """
 
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Tuple
 import pandas as pd
 import numpy as np
 import re
@@ -55,7 +55,7 @@ def get_default_allianz_dataset() -> pd.DataFrame:
 def run_comprehensive_dq_checks(df: pd.DataFrame, source_name: str = "Uploaded Dataset") -> Dict[str, Any]:
     """
     Executes 10 core DQ checks against any DataFrame.
-    Returns structured results for enlarged KPI cards, 10-check grid, root-cause hub, and SQL fixes.
+    Returns structured results for enlarged KPI cards, 10-check grid, failed records table, and SQL fixes.
     """
     total_rows = len(df)
     total_cols = len(df.columns)
@@ -72,21 +72,23 @@ def run_comprehensive_dq_checks(df: pd.DataFrame, source_name: str = "Uploaded D
             "total_checks": 10,
             "total_failed_records": 0,
             "clean_records": 0,
+            "clean_pct": 100.0,
             "checks_list": [],
-            "column_breakdown": pd.DataFrame(),
+            "column_breakdown": pd.DataFrame(columns=["Target Name", "Total Failed Records", "Failed Records %", "Status"]),
             "root_cause_summary": [],
-            "sql_remediation": "",
+            "sql_remediation": "-- No data available to audit.",
             "quarantine_df": pd.DataFrame()
         }
 
-    # Tracking per-row failures: maps row_index -> set of failing checks & detailed messages
+    # Tracking per-row failures: maps row_index -> list of failing checks & detailed messages
     row_failures = {i: [] for i in range(total_rows)}
     row_check_flags = {i: set() for i in range(total_rows)}
 
     # Identify Primary Key Candidate
     pk_col = None
     for col in df.columns:
-        if col.lower().endswith("_id") or col.lower() == "id" or "key" in col.lower():
+        c_low = col.lower()
+        if c_low.endswith("_id") or c_low == "id" or "key" in c_low or c_low.endswith("key"):
             pk_col = col
             break
     if not pk_col:
@@ -97,6 +99,7 @@ def run_comprehensive_dq_checks(df: pd.DataFrame, source_name: str = "Uploaded D
     # -------------------------------------------------------------------------
     exact_dups = df.duplicated(keep=False)
     pk_dups = df[pk_col].duplicated(keep=False) & df[pk_col].notnull()
+    pk_dup_count = int(pk_dups.sum())
     uniqueness_failing_indices = set(df[exact_dups | pk_dups].index)
 
     for idx in uniqueness_failing_indices:
@@ -164,7 +167,7 @@ def run_comprehensive_dq_checks(df: pd.DataFrame, source_name: str = "Uploaded D
     # -------------------------------------------------------------------------
     consistency_failing_indices = set()
     now = datetime.now()
-    date_cols = [c for c in df.columns if any(t in c.lower() for t in ["date", "time", "created", "signup", "dob"])]
+    date_cols = [c for c in df.columns if any(t in c.lower() for t in ["date", "time", "created", "signup", "dob", "pickup", "dropoff"])]
     for dc in date_cols:
         try:
             parsed = pd.to_datetime(df[dc], errors='coerce')
@@ -181,12 +184,12 @@ def run_comprehensive_dq_checks(df: pd.DataFrame, source_name: str = "Uploaded D
     consistency_pass_rate = round(max(0.0, (1.0 - (consistency_fails / total_rows)) * 100), 1) if date_cols else 100.0
 
     # -------------------------------------------------------------------------
-    # 6. ACCURACY CHECKS (Numeric logic: non-negative revenue, valid credit score)
+    # 6. ACCURACY CHECKS (Numeric logic: non-negative currency, valid ranges)
     # -------------------------------------------------------------------------
     accuracy_failing_indices = set()
     for col in df.columns:
         if pd.api.types.is_numeric_dtype(df[col]):
-            if any(t in col.lower() for t in ["revenue", "amount", "price", "spend", "cost", "premium"]):
+            if any(t in col.lower() for t in ["revenue", "amount", "price", "spend", "cost", "premium", "fare", "totalprice", "acctbal"]):
                 neg_mask = df[col] < 0
                 for idx in df[neg_mask].index:
                     accuracy_failing_indices.add(idx)
@@ -225,7 +228,6 @@ def run_comprehensive_dq_checks(df: pd.DataFrame, source_name: str = "Uploaded D
     # -------------------------------------------------------------------------
     range_failing_indices = set()
     for col in df.select_dtypes(include=[np.number]).columns:
-        # Detect percentage column out of [0, 100]
         if any(term in col.lower() for term in ["pct", "percent", "rate", "ratio"]):
             p_out = (df[col] < 0) | (df[col] > 100)
             for idx in df[p_out & df[col].notnull()].index:
@@ -242,7 +244,8 @@ def run_comprehensive_dq_checks(df: pd.DataFrame, source_name: str = "Uploaded D
     # -------------------------------------------------------------------------
     key_integrity_failing_indices = set()
     for idx, val in df[pk_col].items():
-        if pd.isnull(val) or len(str(val).strip()) < 3 or not re.match(r"^[A-Za-z0-9_-]+$", str(val).strip()):
+        s_val = str(val).strip()
+        if pd.isnull(val) or len(s_val) < 1 or not re.match(r"^[A-Za-z0-9_-]+$", s_val):
             key_integrity_failing_indices.add(idx)
             row_failures[idx].append(f"Invalid primary key syntax '{val}' in {pk_col}")
             row_check_flags[idx].add("Key Integrity Checks")
@@ -271,7 +274,7 @@ def run_comprehensive_dq_checks(df: pd.DataFrame, source_name: str = "Uploaded D
     # CONSOLIDATE 10 ENTERPRISE VALIDATION CHECKS
     # -------------------------------------------------------------------------
     checks_list = [
-        {"id": "uniqueness", "name": "Uniqueness Checks", "dimension": "Uniqueness", "failures": uniqueness_fails, "pass_rate": uniqueness_pass_rate, "is_passed": uniqueness_passed, "status": "PASSED" if uniqueness_passed else "FAILED", "description": "Verifies 0 duplicate rows and 100% unique primary keys."},
+        {"id": "uniqueness", "name": "Uniqueness Checks", "dimension": "Uniqueness", "failures": uniqueness_fails, "pass_rate": uniqueness_pass_rate, "is_passed": uniqueness_passed, "status": "PASSED" if uniqueness_passed else "FAILED", "description": f"Verifies 0 duplicate rows and 100% unique primary keys on '{pk_col}'."},
         {"id": "null_checks", "name": "Null Checks", "dimension": "Completeness", "failures": null_fails, "pass_rate": null_pass_rate, "is_passed": null_passed, "status": "PASSED" if null_passed else "FAILED", "description": "Validates zero missing or null values in mandatory fields."},
         {"id": "format_checks", "name": "Format Checks", "dimension": "Validity", "failures": format_fails, "pass_rate": format_pass_rate, "is_passed": format_passed, "status": "PASSED" if format_passed else "FAILED", "description": "Validates RFC email pattern syntax and string standard formats."},
         {"id": "completeness", "name": "Completeness Checks", "dimension": "Completeness", "failures": completeness_fails, "pass_rate": completeness_pass_rate, "is_passed": completeness_passed, "status": "PASSED" if completeness_passed else "FAILED", "description": "Ensures all required contract attributes are populated."},
@@ -314,9 +317,9 @@ def run_comprehensive_dq_checks(df: pd.DataFrame, source_name: str = "Uploaded D
         
         if "email" in col.lower():
             col_anomalies += format_fails
-        if any(t in col.lower() for t in ["revenue", "amount", "price", "credit", "score"]):
+        if any(t in col.lower() for t in ["revenue", "amount", "price", "credit", "score", "fare", "totalprice"]):
             col_anomalies += accuracy_fails
-        if any(t in col.lower() for t in ["date", "time", "created", "signup"]):
+        if any(t in col.lower() for t in ["date", "time", "created", "signup", "pickup", "dropoff"]):
             col_anomalies += consistency_fails
         if col == pk_col:
             col_anomalies += pk_dup_count
@@ -344,46 +347,25 @@ def run_comprehensive_dq_checks(df: pd.DataFrame, source_name: str = "Uploaded D
     
     quarantine_df = pd.DataFrame(quarantine_rows) if quarantine_rows else pd.DataFrame()
 
-    # Root-Cause Breakdown (Grouped by Failure Category)
-    root_cause_summary = []
-    for c in checks_list:
-        if not c["is_passed"]:
-            root_cause_summary.append({
-                "Check Category": c["name"],
-                "Dimension": c["dimension"],
-                "Failed Records": c["failures"],
-                "Impact Rate": f"{round(100.0 - c['pass_rate'], 1)}%",
-                "Recommended Action": f"Trigger automated pipeline remediation for {c['name']}."
-            })
-
-    # Automated Databricks SQL Remediation Fix Script
+    # Dynamic SQL Remediation Fix Script
+    clean_target = source_name.replace('File: ', '').replace('Unity Catalog: ', '').strip()
     sql_remediation = f"""-- ====================================================================
 -- PROJECT ALLIANZ AUTOMATED REMEDIATION SCRIPT (DATABRICKS SQL)
--- Source: {source_name} | Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+-- Target: {clean_target} | Evaluated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 -- ====================================================================
 
 -- 1. Quarantine Defective Rows into Dead Letter Queue (DLQ)
-CREATE TABLE IF NOT EXISTS allianz_gold_catalog.quarantine.dlq_dq_exceptions AS
+CREATE TABLE IF NOT EXISTS samples_quarantine.dlq_dq_exceptions AS
 SELECT *, 
        current_timestamp() AS quarantined_at,
        'DQ_CHECK_BREACH' AS exception_code
-FROM {source_name.replace('File: ', '').replace('Unity Catalog: ', '')}
+FROM {clean_target}
 WHERE {pk_col} IN (
     SELECT {pk_col} 
-    FROM {source_name.replace('File: ', '').replace('Unity Catalog: ', '')} 
+    FROM {clean_target} 
     GROUP BY {pk_col} 
     HAVING COUNT(*) > 1
-)
-OR email_address NOT LIKE '%@%.%'
-OR annual_revenue < 0;
-
--- 2. Promote Only 100% Certified Clean Records to Gold
-CREATE OR REPLACE VIEW allianz_gold_catalog.certified.clean_records_view AS
-SELECT *
-FROM {source_name.replace('File: ', '').replace('Unity Catalog: ', '')}
-WHERE annual_revenue >= 0
-  AND (credit_score BETWEEN 300 AND 850 OR credit_score IS NULL)
-  AND (email_address LIKE '%@%.%' OR email_address IS NULL);
+);
 """
 
     return {
@@ -400,72 +382,103 @@ WHERE annual_revenue >= 0
         "clean_pct": round((clean_records / total_rows) * 100, 1),
         "checks_list": checks_list,
         "column_breakdown": col_breakdown_df,
-        "root_cause_summary": root_cause_summary,
         "sql_remediation": sql_remediation,
         "quarantine_df": quarantine_df
     }
 
 
-def get_catalog_sample_tables() -> Dict[str, Dict[str, List[str]]]:
-    """Allianz Catalog and Schema hierarchy available in Unity Catalog."""
-    return {
-        "allianz_gold_catalog": {
-            "policyholder_dw": ["dim_policyholder", "dim_policy", "fct_claims_monthly"],
-            "motor_underwriting": ["dim_vehicle", "fct_policy_premiums", "fct_loss_ratio"],
-            "commercial_risk": ["dim_enterprise_account", "fct_risk_evaluations"]
-        },
-        "allianz_silver_lake": {
-            "raw_staging": ["stg_crm_customers", "stg_broker_feeds"],
-            "finance_ledger": ["stg_payment_transactions"]
-        }
-    }
+# =============================================================================
+# DYNAMIC SAMPLES CATALOG DISCOVERY & QUERY ENGINE
+# =============================================================================
 
-
-def load_catalog_table_data(catalog: str, schema: str, table: str) -> pd.DataFrame:
+def get_dynamic_schemas(catalog: str = "samples") -> List[str]:
     """
-    Queries real Unity Catalog tables using the user's active OBO token,
-    with automatic fallback to realistic enterprise sample data.
+    Fetches all schemas dynamically under the specified catalog.
+    Defaults to 'samples' catalog as requested.
     """
-    try:
-        import obo_auth
-        user_ctx = obo_auth.get_current_user_context()
-        conn = obo_auth.get_databricks_sql_connection(user_ctx)
-        if conn:
-            query = f"SELECT * FROM {catalog}.{schema}.{table} LIMIT 10000"
-            df = pd.read_sql(query, conn)
-            return df
-    except Exception:
-        pass
+    import obo_auth
+    return obo_auth.fetch_live_schemas(catalog=catalog)
 
-    # Fallback to realistic Project Allianz sample data if running offline/demo
-    if "policyholder" in table.lower() or "customer" in table.lower():
-        data = {
-            "customer_id": [f"ALZ_{2000 + i}" for i in range(25)],
-            "full_name": [f"Allianz Client {i}" for i in range(25)],
-            "email_address": [f"client{i}@allianz-corp.com" if i % 6 != 0 else "invalid-client-email" for i in range(25)],
-            "country": ["Germany", "UK", "France", "USA", "Italy"] * 5,
-            "annual_revenue": [250000 + (i * 20000) if i != 4 else -12000 for i in range(25)],
-            "credit_score": [720 + (i * 5) if i != 9 else 950 for i in range(25)],
-            "signup_date": ["2024-03-15"] * 24 + ["2029-01-01"],
-            "status": ["Active"] * 23 + ["N/A", "Active"]
-        }
-        df = pd.DataFrame(data)
-        df.loc[24, "customer_id"] = "ALZ_2000"
-        return df
-    elif "claim" in table.lower():
-        data = {
-            "claim_id": [f"CLM_{8000 + i}" for i in range(30)],
-            "policy_id": [f"POL_{5000 + (i % 7)}" for i in range(30)],
-            "claim_amount": [1500.0 + (i * 250) for i in range(30)],
-            "claim_status": ["Approved"] * 24 + ["Pending"] * 5 + ["Rejected"],
-            "claim_date": ["2026-02-10"] * 30
-        }
-        return pd.DataFrame(data)
+
+def get_dynamic_tables(catalog: str = "samples", schema: str = "nyctaxi") -> List[str]:
+    """
+    Fetches all tables dynamically under the specified catalog and schema.
+    """
+    import obo_auth
+    return obo_auth.fetch_live_tables(catalog=catalog, schema=schema)
+
+
+def load_catalog_table_data(
+    catalog: str = "samples",
+    schema: str = "nyctaxi",
+    table: str = "trips",
+    limit: int = 5000,
+    warehouse_id: Optional[str] = None
+) -> Tuple[pd.DataFrame, Optional[str]]:
+    """
+    Queries live Unity Catalog table using active user OBO token.
+    If live query fails (e.g. warehouse paused or local demo), falls back cleanly
+    to realistic schema-matched sample data so the dashboard never crashes.
+    """
+    import obo_auth
+    query = f"SELECT * FROM {catalog}.{schema}.{table} LIMIT {limit}"
+    
+    # 1. Attempt live query to Databricks SQL Warehouse
+    live_df, error_msg = obo_auth.execute_unity_catalog_sql(query, warehouse_id=warehouse_id)
+    if live_df is not None and not live_df.empty:
+        return live_df, None
+
+    # 2. Schema-matched realistic fallback
+    fallback_df = get_sample_table_fallback(catalog, schema, table)
+    return fallback_df, error_msg
+
+
+def get_sample_table_fallback(catalog: str, schema: str, table: str) -> pd.DataFrame:
+    """
+    Generates realistic demo dataset matching Databricks 'samples' catalog schemas.
+    Contains built-in DQ anomalies to demonstrate all 10 validations.
+    """
+    t_name = table.lower()
+    s_name = schema.lower()
+
+    if "trip" in t_name or s_name == "nyctaxi":
+        return pd.DataFrame({
+            "trip_id": [f"TRIP_{1000 + i}" for i in range(20)] + ["TRIP_1000"],
+            "pickup_datetime": ["2024-03-15 08:30:00"] * 19 + ["2029-01-01 12:00:00", "2024-03-15 08:30:00"],
+            "dropoff_datetime": ["2024-03-15 08:45:00"] * 21,
+            "passenger_count": [1, 2, 1, 4, None, 1, 2, 3, 1, 2, 1, 1, 6, 2, 1, 1, 2, 1, 3, 1, 1],
+            "trip_distance": [2.5, 4.1, 0.8, 12.3, 1.2, 3.4, 5.0, 2.1, 8.4, 1.9, 2.5, 0.5, 15.2, 3.1, 2.8, 1.1, 4.5, 2.0, 6.3, 3.8, 2.5],
+            "fare_amount": [14.50, 22.00, 8.50, -15.00, 11.00, 18.50, 25.00, 12.00, 38.00, 10.50, 14.50, 7.00, 48.00, 17.50, 15.00, 9.00, 24.50, 12.50, 31.00, 20.00, 14.50],
+            "payment_type": ["Credit Card", "Cash", "Credit Card", "Unknown", "Credit Card", "Cash", "Credit Card", "N/A", "Credit Card", "Cash", "Credit Card", "Cash", "Credit Card", "  Cash  ", "Credit Card", "Cash", "Credit Card", "Credit Card", "Cash", "Credit Card", "Credit Card"]
+        })
+
+    elif "customer" in t_name or s_name == "tpch":
+        return pd.DataFrame({
+            "c_custkey": [f"CUST_{5000 + i}" for i in range(20)] + ["CUST_5000"],
+            "c_name": [f"Customer#{5000 + i:09d}" for i in range(20)] + ["Customer#000005000"],
+            "c_address": [f"{100 + i} Allianz Corporate Way" for i in range(21)],
+            "c_nationkey": [1, 2, 3, 1, 2, 4, 1, 3, 2, 1, 1, 5, 2, 3, 1, 4, 2, 1, 3, 2, 1],
+            "c_phone": ["+1-555-0101", "+1-555-0102", None, "+49-30-1234", "+1-555-0105", "+33-1-4050", "+1-555-0107", "N/A", "+1-555-0109", "+1-555-0110", "+1-555-0101", "+1-555-0112", "+1-555-0113", None, "+1-555-0115", "+1-555-0116", "+1-555-0117", "+1-555-0118", "+1-555-0119", "+1-555-0120", "+1-555-0101"],
+            "c_acctbal": [4500.50, 1200.00, 8900.25, -250.00, 3100.00, 15400.00, 670.00, 2900.00, 7800.50, 420.00, 4500.50, 9500.00, 120.00, 6100.00, -50.00, 8300.00, 4100.00, 1250.00, 7400.00, 3800.00, 4500.50],
+            "c_mktsegment": ["BUILDING", "AUTOMOBILE", "MACHINERY", "HOUSEHOLD", "FURNITURE", "BUILDING", "AUTOMOBILE", "  MACHINERY  ", "HOUSEHOLD", "FURNITURE", "BUILDING", "AUTOMOBILE", "MACHINERY", "HOUSEHOLD", "FURNITURE", "BUILDING", "AUTOMOBILE", "MACHINERY", "HOUSEHOLD", "FURNITURE", "BUILDING"]
+        })
+
+    elif "order" in t_name:
+        return pd.DataFrame({
+            "o_orderkey": [f"ORD_{9000 + i}" for i in range(20)] + ["ORD_9000"],
+            "o_custkey": [f"CUST_{5000 + (i % 5)}" for i in range(21)],
+            "o_orderstatus": ["F", "O", "P", "F", "O", "F", "P", "Unknown", "F", "O", "F", "O", "P", "F", "O", "F", "P", "F", "O", "F", "F"],
+            "o_totalprice": [15200.00, 8400.50, 32000.00, -120.00, 4500.00, 18900.00, 7600.00, 21000.00, 9500.00, 13400.00, 15200.00, 6700.00, 28000.00, 4100.00, 11200.00, 19800.00, 5400.00, 16300.00, 8900.00, 22500.00, 15200.00],
+            "o_orderdate": ["2024-02-10"] * 19 + ["2030-05-15", "2024-02-10"],
+            "o_orderpriority": ["1-URGENT", "2-HIGH", "3-MEDIUM", "4-NOT SPECIFIED", "5-LOW"] * 4 + ["1-URGENT"]
+        })
+
     else:
-        data = {
-            "entity_id": [f"ENT_{100 + i}" for i in range(20)],
-            "risk_tier": ["Tier 1", "Tier 2", "Tier 3"] * 6 + ["Tier 1", "Tier 2"],
-            "premium_amount": [5000 + (i * 400) for i in range(20)],
-            "effective_date": ["2026-01-01"] * 20
-        }
-        return pd.DataFrame(data)
+        # Generic table fallback
+        return pd.DataFrame({
+            "record_id": [f"REC_{100 + i}" for i in range(20)] + ["REC_100"],
+            "entity_name": [f"Entity {i}" for i in range(20)] + ["Entity 0"],
+            "category": ["Tier 1", "Tier 2", "Tier 3", "N/A", "Tier 1"] * 4 + ["Tier 1"],
+            "metric_value": [100.0 + (i * 15.0) if i != 3 else -50.0 for i in range(21)],
+            "created_timestamp": ["2024-01-01 10:00:00"] * 19 + ["2028-12-31 00:00:00", "2024-01-01 10:00:00"]
+        })

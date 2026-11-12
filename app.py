@@ -105,23 +105,40 @@ if source_choice == "📁 Manually Uploaded File":
         source_display_name = "File: sample_customers.csv (Allianz Policyholders)"
 
 else:
-    # Unity Catalog Mode
-    catalog_tree = data_service.get_catalog_sample_tables()
-    c1, c2, c3, c4 = st.columns([1.3, 1.3, 1.5, 1.0])
+    # Unity Catalog Mode - Catalog set to 'samples', with dynamic schemas and tables
+    selected_cat = "samples"
+    
+    # 1. Fetch schemas under 'samples' dynamically
+    available_schemas = data_service.get_dynamic_schemas(selected_cat)
+    if not available_schemas:
+        available_schemas = ["nyctaxi", "tpch", "tpcds", "bike_sharing", "accidents"]
+
+    c1, c2, c3, c4, c5 = st.columns([1.1, 1.4, 1.6, 0.9, 1.1])
     with c1:
-        selected_cat = st.selectbox("Catalog", list(catalog_tree.keys()))
+        st.selectbox("Catalog", [selected_cat], index=0, disabled=True, help="Catalog is set to built-in Databricks 'samples' catalog.")
     with c2:
-        selected_sch = st.selectbox("Schema", list(catalog_tree[selected_cat].keys()))
+        selected_sch = st.selectbox("Schema", available_schemas, index=0, help="Dynamically listed schemas in 'samples' catalog.")
     with c3:
-        selected_tbl = st.selectbox("Table", catalog_tree[selected_cat][selected_sch])
+        # 2. Dynamically fetch tables under samples.<selected_sch>
+        available_tables = data_service.get_dynamic_tables(selected_cat, selected_sch)
+        if not available_tables:
+            available_tables = ["trips"] if selected_sch == "nyctaxi" else ["customer", "orders"]
+        selected_tbl = st.selectbox("Table", available_tables, index=0, help=f"Dynamically listed tables in 'samples.{selected_sch}'.")
     with c4:
+        max_rows = st.selectbox("Max Rows", [1000, 5000, 10000, 25000], index=1, help="Row limit for evaluation")
+    with c5:
         st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
         run_cat = st.button("Run Audit", use_container_width=True)
 
     source_display_name = f"Unity Catalog: {selected_cat}.{selected_sch}.{selected_tbl}"
-    active_df = data_service.load_catalog_table_data(selected_cat, selected_sch, selected_tbl)
+    active_df, err_notice = data_service.load_catalog_table_data(selected_cat, selected_sch, selected_tbl, limit=max_rows)
+    
     if active_df is None or active_df.empty:
         active_df = data_service.get_default_allianz_dataset()
+
+    if err_notice:
+        with st.expander("ℹ️ Databricks SQL Warehouse Status", expanded=False):
+            st.info(f"Databricks SQL Warehouse notice: {err_notice}\n\nRendering schema-matched dataset for '{selected_cat}.{selected_sch}.{selected_tbl}'.")
 
 st.markdown("</div>", unsafe_allow_html=True)
 

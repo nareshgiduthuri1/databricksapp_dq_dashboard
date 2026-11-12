@@ -142,6 +142,43 @@ def get_white_dashboard_css() -> str:
         color: #475569 !important;
     }
 
+    /* Streamlit Selectboxes, Inputs & Dropdowns Overrides (Force Clean White) */
+    div[data-baseweb="select"] > div,
+    div[data-testid="stTextInput"] input,
+    div[data-testid="stNumberInput"] input {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+        font-family: 'Segoe UI', 'Plus Jakarta Sans', Arial, sans-serif !important;
+    }
+
+    div[data-baseweb="select"] * {
+        color: #0f172a !important;
+        font-family: 'Segoe UI', 'Plus Jakarta Sans', Arial, sans-serif !important;
+    }
+
+    div[data-baseweb="popover"],
+    div[data-baseweb="menu"],
+    ul[data-testid="stSelectboxMenu"] {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+    }
+
+    div[data-baseweb="popover"] li,
+    div[data-baseweb="menu"] li {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+    }
+
+    div[data-baseweb="popover"] li:hover,
+    div[data-baseweb="menu"] li:hover {
+        background-color: #f0f7ff !important;
+        color: #003781 !important;
+    }
+
     /* Streamlit Buttons Overrides (Allianz Blue, High Contrast White Text) */
     div.stButton > button,
     button[kind="secondary"],
