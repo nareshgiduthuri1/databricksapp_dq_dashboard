@@ -1,0 +1,21 @@
+CREATE TABLE link_claim_health_insurance_claim
+(
+  claim_health_insurance_claim_hash_key STRING NOT NULL,
+  claim_hash_key STRING,
+  health_insurance_claim_hash_key STRING,
+  load_ts TIMESTAMP,
+  record_source STRING
+);
+
+ALTER TABLE link_claim_health_insurance_claim
+ADD CONSTRAINT XPKLINK_CLAIM_HEALTH_INSURANCE_CLAIM PRIMARY KEY (claim_health_insurance_claim_hash_key);
+
+ALTER TABLE link_claim_health_insurance_claim
+ADD CONSTRAINT FK_LINK_CLAIM_HEALTH_INSURANCE_CLAIM__CRM_CLAIM_REGISTER_CSV_SAP_CLAIM_DB
+FOREIGN KEY (claim_hash_key)
+REFERENCES crm_claim_register_csv_sap_claim_db (claim_identifier_source_name_claim_ref_id_source_name);
+
+ALTER TABLE link_claim_health_insurance_claim
+ADD CONSTRAINT FK_LINK_CLAIM_HEALTH_INSURANCE_CLAIM__CRM_HEALTH_CLAIM_REGISTER_CSV
+FOREIGN KEY (health_insurance_claim_hash_key)
+REFERENCES crm_health_claim_register_csv (health_insurance_claim_identifier_source_name);

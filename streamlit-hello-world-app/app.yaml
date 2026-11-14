@@ -1,0 +1,12 @@
+command: [
+  "streamlit",
+  "run",
+  "app.py",
+  "--server.port",
+  "8000",
+  "--server.address",
+  "0.0.0.0"
+]
+env:
+  - name: "DATABRICKS_WAREHOUSE_ID"
+    value: "21e2c37504ba6981" # Optional: Enter your 16-character SQL Warehouse ID here

@@ -1,0 +1,21 @@
+CREATE TABLE link_medical_condition_treatment
+(
+  medical_condition_treatment_hash_key STRING NOT NULL,
+  medical_condition_hash_key STRING,
+  treatment_hash_key STRING,
+  load_ts TIMESTAMP,
+  record_source STRING
+);
+
+ALTER TABLE link_medical_condition_treatment
+ADD CONSTRAINT XPKLINK_MEDICAL_CONDITION_TREATMENT PRIMARY KEY (medical_condition_treatment_hash_key);
+
+ALTER TABLE link_medical_condition_treatment
+ADD CONSTRAINT FK_LINK_MEDICAL_CONDITION_TREATMENT__CRM_MEDICAL_CONDITION_CATALOG_CSV
+FOREIGN KEY (medical_condition_hash_key)
+REFERENCES crm_medical_condition_catalog_csv (medical_condition_identifier_source_name);
+
+ALTER TABLE link_medical_condition_treatment
+ADD CONSTRAINT FK_LINK_MEDICAL_CONDITION_TREATMENT__CRM_TREATMENT_REGISTER_CSV
+FOREIGN KEY (treatment_hash_key)
+REFERENCES crm_treatment_register_csv (treatment_identifier_source_name);

@@ -1,0 +1,21 @@
+CREATE TABLE link_claim_event_claim_investigation
+(
+  claim_event_claim_investigation_hash_key STRING NOT NULL,
+  claim_event_hash_key STRING,
+  claim_investigation_hash_key STRING,
+  load_ts TIMESTAMP,
+  record_source STRING
+);
+
+ALTER TABLE link_claim_event_claim_investigation
+ADD CONSTRAINT XPKLINK_CLAIM_EVENT_CLAIM_INVESTIGATION PRIMARY KEY (claim_event_claim_investigation_hash_key);
+
+ALTER TABLE link_claim_event_claim_investigation
+ADD CONSTRAINT FK_LINK_CLAIM_EVENT_CLAIM_INVESTIGATION__CRM_CLAIM_EVENT_LOG_CSV
+FOREIGN KEY (claim_event_hash_key)
+REFERENCES crm_claim_event_log_csv (claim_event_identifier_source_name);
+
+ALTER TABLE link_claim_event_claim_investigation
+ADD CONSTRAINT FK_LINK_CLAIM_EVENT_CLAIM_INVESTIGATION__CRM_CLAIM_INVESTIGATION_REGISTER_CSV_SAP_CLAIM_INVESTIGATION_DB
+FOREIGN KEY (claim_investigation_hash_key)
+REFERENCES crm_claim_investigation_register_csv_sap_claim_investigation_db (claim_investigation_identifier_source_name_claim_ref_id_source_name);

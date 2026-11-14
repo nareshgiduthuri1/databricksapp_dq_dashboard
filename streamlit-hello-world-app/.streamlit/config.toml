@@ -1,0 +1,12 @@
+# Force the light theme so native Streamlit widgets match the white dashboard CSS,
+# regardless of the viewer's browser / OS dark-mode setting.
+[theme]
+base = "light"
+primaryColor = "#003781"
+backgroundColor = "#f7f9fc"
+secondaryBackgroundColor = "#ffffff"
+textColor = "#0f172a"
+font = "sans serif"
+
+[client]
+toolbarMode = "minimal"

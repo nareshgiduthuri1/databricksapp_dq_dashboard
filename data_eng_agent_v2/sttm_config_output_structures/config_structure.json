@@ -1,0 +1,12 @@
+{
+    "name": "",
+    "target_table": "",
+    "table_type": "",
+    "business_key_col": "",
+    "watermark_col": "",
+    "scd_type": "",
+    "source_tables": [],
+    "stage_sql": "",
+    "attribute_cols": [],
+    "insert_cols": []
+}

@@ -1,0 +1,23 @@
+[  {
+        "Target_Table": "",
+        "Target_Table_Type": "",
+        "Table_Definition": "",
+        "Source_Data_Vault_Table": "",
+        "Source_Logical_Table": "",
+        "Column_Mappings": [
+            {
+                "Target_Column": "",
+                "Data_Type": "",
+                "Column_Order": "",
+                "Is_PK": "",
+                "Is_FK": "",
+                "Column_Definition": "",
+                "SourceMapping": {
+                    "Source_Table": "",
+                    "Source_Column": "",
+                    "Transformation_Logic": ""
+                }
+            }
+        ]
+    }
+]

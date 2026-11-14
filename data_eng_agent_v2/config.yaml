@@ -1,0 +1,172 @@
+# ════════════════════════════════════════════════════════════════════
+#  data_eng_agent — Application Configuration Template
+#  ------------------------------------------------------------------
+#  Copy this file to `config.yaml` and fill in the values for the
+#  LLM backend(s) you plan to use:
+#
+#      cp config.example.yaml config.yaml
+#
+#  `config.yaml` is gitignored and holds real credentials; this template
+#  is committed and must contain NO secrets.
+#
+#  Override the config file location with the APP_CONFIG_FILE env var
+#  (e.g. APP_CONFIG_FILE=/etc/data_eng_agent/prod.yaml) for deployments.
+#
+#  QUICK START (non-developers):
+#    1. cp config.example.yaml config.yaml
+#    2. In config.yaml set  llm.default_model  to your LLM.
+#    3. Fill ONLY the matching providers.* section with your credentials.
+#    4. Run the pipeline. Nothing else needs to change.
+#
+#  Which backend needs which provider block:
+#    "openai"        → providers.azure_openai_gpt4o      (Azure OpenAI GPT-4o)
+#    "gpt-5-chat"    → providers.azure_openai_gpt5_chat  (Azure OpenAI GPT-5-chat)
+#    "gpt-5"         → providers.azure_openai_gpt5        (Azure OpenAI GPT-5)
+#    "claude"        → providers.vertex_claude           (Claude via Vertex AI)
+#    "gemini"        → providers.google_gemini           (Google Gemini)
+#    "openai-direct" → providers.openai_direct           (OpenAI / compatible API)
+# ════════════════════════════════════════════════════════════════════
+
+
+# ─────────────────────────────────────────────────────────
+# Pipeline I/O files
+# ─────────────────────────────────────────────────────────
+io:
+  input_xml_file:  ./input/Claim_Data_Vault_Model_Repository.xml
+  output_json_file: ./output/sttm/Claim_Data_Vault_Model_Repository.json
+  scd1_json_file:  ./output/sttm/scd1_tables.json
+  scd2_json_file:  ./output/sttm/scd2_tables.json
+  fact_json_file:  ./output/sttm/fact_tables.json
+
+  hub_json_file: ./output/sttm/hub_tables.json
+  sat_json_file: ./output/sttm/sat_tables.json
+  link_json_file: ./output/sttm/link_tables.json
+
+  csv_output_file: ./output/lineage/erwin_customer360_final_mapping_file.csv
+
+
+# ─────────────────────────────────────────────────────────
+# Directories produced / consumed by the pipeline
+# ─────────────────────────────────────────────────────────
+directories:
+  config_output_dir:   output/configs/
+  notebook_output_dir: db_notebooks
+  ddl_output_dir:      output/ddl/
+
+
+# ─────────────────────────────────────────────────────────
+# Generation targets
+#   data_platform  : Databricks | Snowflake | Oracle | MySQL | fabrics | databricks
+#   sql_dialect    : e.g. "Spark SQL" (null → platform default)
+#   execution_engine: free-text engine hint passed to prompts
+#   enable_ddl_generation: master switch for the DDL stage
+# ─────────────────────────────────────────────────────────
+generation:
+  # Drives which source-model UDPs Stage 1 (xmltojson) reads from.
+  # Allowed: "Data Vault/Raw Vault to Dimensional" | "3NF to Dimensional" | "Bronze to Raw Vault" | "Raw Vault to Business Vault"
+  type_of_conversion: "Bronze to Raw Vault"
+  data_platform:    databricks
+  sql_dialect:      Spark SQL
+  execution_engine: Spark engine (Databricks Lakehouse)
+  enable_ddl_generation: true
+
+# generation:
+#   data_platform:    snowflake
+#   sql_dialect:      Snowflake SQL
+#   execution_engine: MPP engine
+#   enable_ddl_generation: true
+
+
+# generation:
+#   data_platform:    microsoft fabric
+#   sql_dialect:      T-SQL (Fabric SQL)
+#   execution_engine: Fabric SQL Engine (OneLake)
+#   enable_ddl_generation: true
+
+# generation:
+#   data_platform:    microsoft fabric
+#   sql_dialect:      Spark SQL
+#   execution_engine: Apache Spark (Fabric Runtime)
+
+
+# ─────────────────────────────────────────────────────────
+# LLM model selection  ── THIS IS THE ONLY SWITCH YOU NEED ──
+#
+#   Set `default_model` to the LLM you want the WHOLE pipeline to use
+#   (DDL, Stage SQL and Config generation all follow this one value),
+#   then fill in the matching `providers.*` section below. No code
+#   changes are ever required.
+#
+#   Allowed values for default_model  ->  provider section to fill:
+#     openai         ->  providers.azure_openai_gpt4o      (Azure OpenAI, GPT-4o)
+#     gpt-5          ->  providers.azure_openai_gpt5        (Azure OpenAI, GPT-5)
+#     gpt-5-chat     ->  providers.azure_openai_gpt5_chat   (Azure OpenAI, GPT-5-chat)
+#     claude         ->  providers.vertex_claude            (Claude via Google Vertex AI)
+#     gemini         ->  providers.google_gemini            (Google Gemini)
+#     openai-direct  ->  providers.openai_direct            (OpenAI / OpenAI-compatible API)
+#
+#   You only need to fill the ONE provider section that matches your
+#   chosen default_model — the others can stay blank.
+# ─────────────────────────────────────────────────────────
+llm:
+  default_model:   openai
+  # ddl_model:       openai
+  # config_model:    openai
+  # loader_model:    openai
+  # validator_model: gpt-5
+
+
+# ─────────────────────────────────────────────────────────
+# LLM provider credentials & endpoints  (leave blank — fill in config.yaml)
+# ─────────────────────────────────────────────────────────
+providers:
+
+  # Azure OpenAI — GPT-4o  (used when model == "openai")
+  azure_openai_gpt4o:
+    api_key:        ""
+    api_version:    ""
+    azure_endpoint: ""
+    engine:         ""
+
+  # Azure OpenAI — GPT-5-chat  (used when model == "gpt-5-chat")
+  azure_openai_gpt5_chat:
+    subscription_key: ""
+    api_version:      ""
+    endpoint:         ""
+    model_name:       ""
+    deployment:       ""
+
+  # Azure OpenAI — GPT-5  (used when model == "gpt-5")
+  azure_openai_gpt5:
+    api_key:        ""
+    api_version:    ""
+    azure_endpoint: ""
+    engine:         ""
+
+  # Anthropic Claude via Google Vertex AI  (used when model == "claude")
+  vertex_claude:
+    project_id:     ""
+    location:       ""
+    model_id:       ""
+    client_email:   ""
+    token_uri:      ""
+    private_key_id: ""
+    client_id:      ""
+    # Paste the service-account private key with literal \n for newlines.
+    private_key:    ""
+
+  # Google Gemini  (used when model == "gemini")
+  #   Get an API key from Google AI Studio. model_id examples:
+  #   gemini-1.5-pro, gemini-1.5-flash, gemini-2.0-flash.
+  google_gemini:
+    api_key:  ""
+    model_id: ""
+
+  # OpenAI / OpenAI-compatible direct API  (used when model == "openai-direct")
+  #   Standard OpenAI (api.openai.com): leave base_url blank.
+  #   OpenAI-compatible gateway/proxy: set base_url to that endpoint.
+  #   model examples: gpt-4o, gpt-4o-mini, gpt-4-turbo.
+  openai_direct:
+    api_key:  ""
+    model:    ""
+    base_url: ""

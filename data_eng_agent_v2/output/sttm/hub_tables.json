@@ -1,0 +1,1819 @@
+[
+    {
+        "Target_Table": "hub_catastrophe",
+        "Target_Table_Type": "Physical Table",
+        "Table_Definition": "",
+        "Source_Data_Vault_Table": null,
+        "Source_Logical_Table": null,
+        "Business_Key": null,
+        "SCD_Type": null,
+        "Table_Type": "hub",
+        "Loading_Order": null,
+        "Dependency": null,
+        "Retention_Type": null,
+        "Retention_Attribute": null,
+        "Retention_Reference_Table": null,
+        "Watermark_Date_Columns": null,
+        "Watermark_Time_Columns": null,
+        "Where_Clause": null,
+        "Contains_PII": null,
+        "Database_Name": null,
+        "Schema_Name": null,
+        "Column_Mappings": [
+            {
+                "Target_Column": "catastrophe_hash_key",
+                "Data_Type": "STRING",
+                "Column_Order": "1",
+                "Is_PK": "Yes",
+                "Is_FK": "No",
+                "Column_Definition": "SHA-256(catastrophe_identifier)",
+                "SourceMapping": {
+                    "Source_Table": "crm_catastrophe_event_register_csv",
+                    "Source_Column": "catastrophe_identifier , source_name",
+                    "Transformation_Logic": "HASH(catastrophe_identifier,origin_sys)",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "catastrophe_id",
+                "Data_Type": "STRING",
+                "Column_Order": "2",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Business key",
+                "SourceMapping": {
+                    "Source_Table": "crm_catastrophe_event_register_csv",
+                    "Source_Column": "catastrophe_identifier",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "load_ts",
+                "Data_Type": "TIMESTAMP",
+                "Column_Order": "3",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Load timestamp",
+                "SourceMapping": {
+                    "Source_Table": "crm_catastrophe_event_register_csv",
+                    "Source_Column": "load_ts",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "record_source",
+                "Data_Type": "STRING",
+                "Column_Order": "4",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Source system identifier",
+                "SourceMapping": {
+                    "Source_Table": "crm_catastrophe_event_register_csv",
+                    "Source_Column": "source_name",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            }
+        ]
+    },
+    {
+        "Target_Table": "hub_claim",
+        "Target_Table_Type": "Physical Table",
+        "Table_Definition": "",
+        "Source_Data_Vault_Table": null,
+        "Source_Logical_Table": null,
+        "Business_Key": null,
+        "SCD_Type": null,
+        "Table_Type": "hub",
+        "Loading_Order": null,
+        "Dependency": null,
+        "Retention_Type": null,
+        "Retention_Attribute": null,
+        "Retention_Reference_Table": null,
+        "Watermark_Date_Columns": null,
+        "Watermark_Time_Columns": null,
+        "Where_Clause": null,
+        "Contains_PII": null,
+        "Database_Name": null,
+        "Schema_Name": null,
+        "Column_Mappings": [
+            {
+                "Target_Column": "claim_hash_key",
+                "Data_Type": "STRING",
+                "Column_Order": "1",
+                "Is_PK": "Yes",
+                "Is_FK": "No",
+                "Column_Definition": "SHA-256(claim_identifier)",
+                "SourceMapping": {
+                    "Source_Table": "crm_claim_register_csv, sap_claim_db",
+                    "Source_Column": "(claim_identifier, source_name),\n(claim_ref_id, source_name)",
+                    "Transformation_Logic": "SELECT HASH(claim_identifier, source_name) from crm_claim_register_csv\nOR\nSELECT HASH(claim_ref_id, source_name) from  sap_claim_db",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "claim_id",
+                "Data_Type": "STRING",
+                "Column_Order": "2",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Business key",
+                "SourceMapping": {
+                    "Source_Table": "crm_claim_register_csv, sap_claim_db",
+                    "Source_Column": "claim_identifier, claim_ref_id",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "load_ts",
+                "Data_Type": "TIMESTAMP",
+                "Column_Order": "3",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Load timestamp",
+                "SourceMapping": {
+                    "Source_Table": "crm_claim_register_csv, sap_claim_db",
+                    "Source_Column": "load_ts, load_ts",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "record_source",
+                "Data_Type": "STRING",
+                "Column_Order": "4",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Source system identifier",
+                "SourceMapping": {
+                    "Source_Table": "crm_claim_register_csv, sap_claim_db",
+                    "Source_Column": "source_name, source_name",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            }
+        ]
+    },
+    {
+        "Target_Table": "hub_claim_event",
+        "Target_Table_Type": "Physical Table",
+        "Table_Definition": "",
+        "Source_Data_Vault_Table": null,
+        "Source_Logical_Table": null,
+        "Business_Key": null,
+        "SCD_Type": null,
+        "Table_Type": "hub",
+        "Loading_Order": null,
+        "Dependency": null,
+        "Retention_Type": null,
+        "Retention_Attribute": null,
+        "Retention_Reference_Table": null,
+        "Watermark_Date_Columns": null,
+        "Watermark_Time_Columns": null,
+        "Where_Clause": null,
+        "Contains_PII": null,
+        "Database_Name": null,
+        "Schema_Name": null,
+        "Column_Mappings": [
+            {
+                "Target_Column": "claim_event_hash_key",
+                "Data_Type": "STRING",
+                "Column_Order": "1",
+                "Is_PK": "Yes",
+                "Is_FK": "No",
+                "Column_Definition": "SHA-256(claim_event_identifier)",
+                "SourceMapping": {
+                    "Source_Table": "crm_claim_event_log_csv",
+                    "Source_Column": "claim_event_identifier, source_name",
+                    "Transformation_Logic": "HASH(claim_event_identifier, source_name)",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "claim_event_id",
+                "Data_Type": "STRING",
+                "Column_Order": "2",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Business key",
+                "SourceMapping": {
+                    "Source_Table": "crm_claim_event_log_csv",
+                    "Source_Column": "claim_event_identifier",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "load_ts",
+                "Data_Type": "TIMESTAMP",
+                "Column_Order": "3",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Load timestamp",
+                "SourceMapping": {
+                    "Source_Table": "crm_claim_event_log_csv",
+                    "Source_Column": "load_ts",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "record_source",
+                "Data_Type": "STRING",
+                "Column_Order": "4",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Source system identifier",
+                "SourceMapping": {
+                    "Source_Table": "crm_claim_event_log_csv",
+                    "Source_Column": "source_name",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            }
+        ]
+    },
+    {
+        "Target_Table": "hub_claim_investigation",
+        "Target_Table_Type": "Physical Table",
+        "Table_Definition": "",
+        "Source_Data_Vault_Table": null,
+        "Source_Logical_Table": null,
+        "Business_Key": null,
+        "SCD_Type": null,
+        "Table_Type": "hub",
+        "Loading_Order": null,
+        "Dependency": null,
+        "Retention_Type": null,
+        "Retention_Attribute": null,
+        "Retention_Reference_Table": null,
+        "Watermark_Date_Columns": null,
+        "Watermark_Time_Columns": null,
+        "Where_Clause": null,
+        "Contains_PII": null,
+        "Database_Name": null,
+        "Schema_Name": null,
+        "Column_Mappings": [
+            {
+                "Target_Column": "claim_investigation_hash_key",
+                "Data_Type": "STRING",
+                "Column_Order": "1",
+                "Is_PK": "Yes",
+                "Is_FK": "No",
+                "Column_Definition": "SHA-256(claim_investigation_identifier)",
+                "SourceMapping": {
+                    "Source_Table": "crm_claim_investigation_register_csv, sap_claim_investigation_db",
+                    "Source_Column": "(claim_investigation_identifier, source_name),\n(claim_ref_id, source_name)",
+                    "Transformation_Logic": "SELECT HASH(claim_investigation_identifier,source_name) from crm_claim_investigation_register_csv \n\nOR\n\nSELECT HASH(claim_ref_id, source_name) from  sap_claim_investigation_db",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "claim_investigation_id",
+                "Data_Type": "STRING",
+                "Column_Order": "2",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Business key",
+                "SourceMapping": {
+                    "Source_Table": "crm_claim_investigation_register_csv, sap_claim_investigation_db",
+                    "Source_Column": "claim_investigation_identifier, claim_ref_id",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "load_ts",
+                "Data_Type": "TIMESTAMP",
+                "Column_Order": "3",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Load timestamp",
+                "SourceMapping": {
+                    "Source_Table": "crm_claim_investigation_register_csv, sap_claim_investigation_db",
+                    "Source_Column": "load_ts, load_ts",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "record_source",
+                "Data_Type": "STRING",
+                "Column_Order": "4",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Source system identifier",
+                "SourceMapping": {
+                    "Source_Table": "crm_claim_investigation_register_csv, sap_claim_investigation_db",
+                    "Source_Column": "source_name, source_name",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            }
+        ]
+    },
+    {
+        "Target_Table": "hub_claim_participant",
+        "Target_Table_Type": "Physical Table",
+        "Table_Definition": "",
+        "Source_Data_Vault_Table": null,
+        "Source_Logical_Table": null,
+        "Business_Key": null,
+        "SCD_Type": null,
+        "Table_Type": "hub",
+        "Loading_Order": null,
+        "Dependency": null,
+        "Retention_Type": null,
+        "Retention_Attribute": null,
+        "Retention_Reference_Table": null,
+        "Watermark_Date_Columns": null,
+        "Watermark_Time_Columns": null,
+        "Where_Clause": null,
+        "Contains_PII": null,
+        "Database_Name": null,
+        "Schema_Name": null,
+        "Column_Mappings": [
+            {
+                "Target_Column": "claim_participant_hash_key",
+                "Data_Type": "STRING",
+                "Column_Order": "1",
+                "Is_PK": "Yes",
+                "Is_FK": "No",
+                "Column_Definition": "SHA-256(claim_participant_identifier)",
+                "SourceMapping": {
+                    "Source_Table": "crm_claim_participant_register_csv",
+                    "Source_Column": "claim_participant_identifier, source_name",
+                    "Transformation_Logic": "HASH(claim_participant_identifier, source_name)",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "claim_participant_id",
+                "Data_Type": "STRING",
+                "Column_Order": "2",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Business key",
+                "SourceMapping": {
+                    "Source_Table": "crm_claim_participant_register_csv",
+                    "Source_Column": "claim_participant_identifier",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "load_ts",
+                "Data_Type": "TIMESTAMP",
+                "Column_Order": "3",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Load timestamp",
+                "SourceMapping": {
+                    "Source_Table": "crm_claim_participant_register_csv",
+                    "Source_Column": "load_ts",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "record_source",
+                "Data_Type": "STRING",
+                "Column_Order": "4",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Source system identifier",
+                "SourceMapping": {
+                    "Source_Table": "crm_claim_participant_register_csv",
+                    "Source_Column": "source_name",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            }
+        ]
+    },
+    {
+        "Target_Table": "hub_coverage",
+        "Target_Table_Type": "Physical Table",
+        "Table_Definition": "",
+        "Source_Data_Vault_Table": null,
+        "Source_Logical_Table": null,
+        "Business_Key": null,
+        "SCD_Type": null,
+        "Table_Type": "hub",
+        "Loading_Order": null,
+        "Dependency": null,
+        "Retention_Type": null,
+        "Retention_Attribute": null,
+        "Retention_Reference_Table": null,
+        "Watermark_Date_Columns": null,
+        "Watermark_Time_Columns": null,
+        "Where_Clause": null,
+        "Contains_PII": null,
+        "Database_Name": null,
+        "Schema_Name": null,
+        "Column_Mappings": [
+            {
+                "Target_Column": "coverage_hash_key",
+                "Data_Type": "STRING",
+                "Column_Order": "1",
+                "Is_PK": "Yes",
+                "Is_FK": "No",
+                "Column_Definition": "SHA-256(coverage_identifier)",
+                "SourceMapping": {
+                    "Source_Table": "crm_coverage_catalog_csv",
+                    "Source_Column": "coverage_identifier, source_name",
+                    "Transformation_Logic": "HASH(coverage_identifier, source_name)",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "coverage_id",
+                "Data_Type": "STRING",
+                "Column_Order": "2",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Business key",
+                "SourceMapping": {
+                    "Source_Table": "crm_coverage_catalog_csv",
+                    "Source_Column": "coverage_identifier",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "load_ts",
+                "Data_Type": "TIMESTAMP",
+                "Column_Order": "3",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Load timestamp",
+                "SourceMapping": {
+                    "Source_Table": "crm_coverage_catalog_csv",
+                    "Source_Column": "load_ts",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "record_source",
+                "Data_Type": "STRING",
+                "Column_Order": "4",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Source system identifier",
+                "SourceMapping": {
+                    "Source_Table": "crm_coverage_catalog_csv",
+                    "Source_Column": "source_name",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            }
+        ]
+    },
+    {
+        "Target_Table": "hub_diagnosis",
+        "Target_Table_Type": "Physical Table",
+        "Table_Definition": "",
+        "Source_Data_Vault_Table": null,
+        "Source_Logical_Table": null,
+        "Business_Key": null,
+        "SCD_Type": null,
+        "Table_Type": "hub",
+        "Loading_Order": null,
+        "Dependency": null,
+        "Retention_Type": null,
+        "Retention_Attribute": null,
+        "Retention_Reference_Table": null,
+        "Watermark_Date_Columns": null,
+        "Watermark_Time_Columns": null,
+        "Where_Clause": null,
+        "Contains_PII": null,
+        "Database_Name": null,
+        "Schema_Name": null,
+        "Column_Mappings": [
+            {
+                "Target_Column": "diagnosis_hash_key",
+                "Data_Type": "STRING",
+                "Column_Order": "1",
+                "Is_PK": "Yes",
+                "Is_FK": "No",
+                "Column_Definition": "SHA-256(diagnosis_identifier)",
+                "SourceMapping": {
+                    "Source_Table": "crm_diagnosis_register_csv",
+                    "Source_Column": "diagnosis_identifier, source_name",
+                    "Transformation_Logic": "HASH(diagnosis_identifier, source_name)",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "diagnosis_id",
+                "Data_Type": "STRING",
+                "Column_Order": "2",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Business key",
+                "SourceMapping": {
+                    "Source_Table": "crm_diagnosis_register_csv",
+                    "Source_Column": "diagnosis_identifier",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "load_ts",
+                "Data_Type": "TIMESTAMP",
+                "Column_Order": "3",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Load timestamp",
+                "SourceMapping": {
+                    "Source_Table": "crm_diagnosis_register_csv",
+                    "Source_Column": "load_ts",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "record_source",
+                "Data_Type": "STRING",
+                "Column_Order": "4",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Source system identifier",
+                "SourceMapping": {
+                    "Source_Table": "crm_diagnosis_register_csv",
+                    "Source_Column": "source_name",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            }
+        ]
+    },
+    {
+        "Target_Table": "hub_health_insurance_claim",
+        "Target_Table_Type": "Physical Table",
+        "Table_Definition": "",
+        "Source_Data_Vault_Table": null,
+        "Source_Logical_Table": null,
+        "Business_Key": null,
+        "SCD_Type": null,
+        "Table_Type": "hub",
+        "Loading_Order": null,
+        "Dependency": null,
+        "Retention_Type": null,
+        "Retention_Attribute": null,
+        "Retention_Reference_Table": null,
+        "Watermark_Date_Columns": null,
+        "Watermark_Time_Columns": null,
+        "Where_Clause": null,
+        "Contains_PII": null,
+        "Database_Name": null,
+        "Schema_Name": null,
+        "Column_Mappings": [
+            {
+                "Target_Column": "health_insurance_claim_hash_key",
+                "Data_Type": "STRING",
+                "Column_Order": "1",
+                "Is_PK": "Yes",
+                "Is_FK": "No",
+                "Column_Definition": "SHA-256(health_insurance_claim_identifier)",
+                "SourceMapping": {
+                    "Source_Table": "crm_health_claim_register_csv",
+                    "Source_Column": "health_insurance_claim_identifier, source_name",
+                    "Transformation_Logic": "HASH(health_insurance_claim_identifier, source_name)",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "health_insurance_claim_id",
+                "Data_Type": "STRING",
+                "Column_Order": "2",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Business key",
+                "SourceMapping": {
+                    "Source_Table": "crm_health_claim_register_csv",
+                    "Source_Column": "health_insurance_claim_identifier",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "load_ts",
+                "Data_Type": "TIMESTAMP",
+                "Column_Order": "3",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Load timestamp",
+                "SourceMapping": {
+                    "Source_Table": "crm_health_claim_register_csv",
+                    "Source_Column": "load_ts",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "record_source",
+                "Data_Type": "STRING",
+                "Column_Order": "4",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Source system identifier",
+                "SourceMapping": {
+                    "Source_Table": "crm_health_claim_register_csv",
+                    "Source_Column": "source_name",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            }
+        ]
+    },
+    {
+        "Target_Table": "hub_injury",
+        "Target_Table_Type": "Physical Table",
+        "Table_Definition": "",
+        "Source_Data_Vault_Table": null,
+        "Source_Logical_Table": null,
+        "Business_Key": null,
+        "SCD_Type": null,
+        "Table_Type": "hub",
+        "Loading_Order": null,
+        "Dependency": null,
+        "Retention_Type": null,
+        "Retention_Attribute": null,
+        "Retention_Reference_Table": null,
+        "Watermark_Date_Columns": null,
+        "Watermark_Time_Columns": null,
+        "Where_Clause": null,
+        "Contains_PII": null,
+        "Database_Name": null,
+        "Schema_Name": null,
+        "Column_Mappings": [
+            {
+                "Target_Column": "injury_hash_key",
+                "Data_Type": "STRING",
+                "Column_Order": "1",
+                "Is_PK": "Yes",
+                "Is_FK": "No",
+                "Column_Definition": "SHA-256(injury_identifier)",
+                "SourceMapping": {
+                    "Source_Table": "crm_injury_register_csv",
+                    "Source_Column": "injury_identifier, source_name",
+                    "Transformation_Logic": "HASH(injury_identifier, source_name)",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "injury_id",
+                "Data_Type": "STRING",
+                "Column_Order": "2",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Business key",
+                "SourceMapping": {
+                    "Source_Table": "crm_injury_register_csv",
+                    "Source_Column": "injury_identifier",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "load_ts",
+                "Data_Type": "TIMESTAMP",
+                "Column_Order": "3",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Load timestamp",
+                "SourceMapping": {
+                    "Source_Table": "crm_injury_register_csv",
+                    "Source_Column": "load_ts",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "record_source",
+                "Data_Type": "STRING",
+                "Column_Order": "4",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Source system identifier",
+                "SourceMapping": {
+                    "Source_Table": "crm_injury_register_csv",
+                    "Source_Column": "source_name",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            }
+        ]
+    },
+    {
+        "Target_Table": "hub_insured_entity",
+        "Target_Table_Type": "Physical Table",
+        "Table_Definition": "",
+        "Source_Data_Vault_Table": null,
+        "Source_Logical_Table": null,
+        "Business_Key": null,
+        "SCD_Type": null,
+        "Table_Type": "hub",
+        "Loading_Order": null,
+        "Dependency": null,
+        "Retention_Type": null,
+        "Retention_Attribute": null,
+        "Retention_Reference_Table": null,
+        "Watermark_Date_Columns": null,
+        "Watermark_Time_Columns": null,
+        "Where_Clause": null,
+        "Contains_PII": null,
+        "Database_Name": null,
+        "Schema_Name": null,
+        "Column_Mappings": [
+            {
+                "Target_Column": "insured_entity_hash_key",
+                "Data_Type": "STRING",
+                "Column_Order": "1",
+                "Is_PK": "Yes",
+                "Is_FK": "No",
+                "Column_Definition": "SHA-256(insured_entity_identifier)",
+                "SourceMapping": {
+                    "Source_Table": "crm_insured_entity_register_csv",
+                    "Source_Column": "insured_entity_identifier, source_name",
+                    "Transformation_Logic": "HASH(insured_entity_identifier, source_name)",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "insured_entity_id",
+                "Data_Type": "STRING",
+                "Column_Order": "2",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Business key",
+                "SourceMapping": {
+                    "Source_Table": "crm_insured_entity_register_csv",
+                    "Source_Column": "insured_entity_identifier",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "load_ts",
+                "Data_Type": "TIMESTAMP",
+                "Column_Order": "3",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Load timestamp",
+                "SourceMapping": {
+                    "Source_Table": "crm_insured_entity_register_csv",
+                    "Source_Column": "load_ts",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "record_source",
+                "Data_Type": "STRING",
+                "Column_Order": "4",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Source system identifier",
+                "SourceMapping": {
+                    "Source_Table": "crm_insured_entity_register_csv",
+                    "Source_Column": "source_name",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            }
+        ]
+    },
+    {
+        "Target_Table": "hub_litigation",
+        "Target_Table_Type": "Physical Table",
+        "Table_Definition": "",
+        "Source_Data_Vault_Table": null,
+        "Source_Logical_Table": null,
+        "Business_Key": null,
+        "SCD_Type": null,
+        "Table_Type": "hub",
+        "Loading_Order": null,
+        "Dependency": null,
+        "Retention_Type": null,
+        "Retention_Attribute": null,
+        "Retention_Reference_Table": null,
+        "Watermark_Date_Columns": null,
+        "Watermark_Time_Columns": null,
+        "Where_Clause": null,
+        "Contains_PII": null,
+        "Database_Name": null,
+        "Schema_Name": null,
+        "Column_Mappings": [
+            {
+                "Target_Column": "litigation_hash_key",
+                "Data_Type": "STRING",
+                "Column_Order": "1",
+                "Is_PK": "Yes",
+                "Is_FK": "No",
+                "Column_Definition": "SHA-256(litigation_identifier)",
+                "SourceMapping": {
+                    "Source_Table": "crm_litigation_register_csv",
+                    "Source_Column": "litigation_identifier, source_name",
+                    "Transformation_Logic": "HASH(litigation_identifier, source_name)",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "litigation_id",
+                "Data_Type": "STRING",
+                "Column_Order": "2",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Business key",
+                "SourceMapping": {
+                    "Source_Table": "crm_litigation_register_csv",
+                    "Source_Column": "litigation_identifier",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "load_ts",
+                "Data_Type": "TIMESTAMP",
+                "Column_Order": "3",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Load timestamp",
+                "SourceMapping": {
+                    "Source_Table": "crm_litigation_register_csv",
+                    "Source_Column": "load_ts",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "record_source",
+                "Data_Type": "STRING",
+                "Column_Order": "4",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Source system identifier",
+                "SourceMapping": {
+                    "Source_Table": "crm_litigation_register_csv",
+                    "Source_Column": "source_name",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            }
+        ]
+    },
+    {
+        "Target_Table": "hub_loss_event",
+        "Target_Table_Type": "Physical Table",
+        "Table_Definition": "",
+        "Source_Data_Vault_Table": null,
+        "Source_Logical_Table": null,
+        "Business_Key": null,
+        "SCD_Type": null,
+        "Table_Type": "hub",
+        "Loading_Order": null,
+        "Dependency": null,
+        "Retention_Type": null,
+        "Retention_Attribute": null,
+        "Retention_Reference_Table": null,
+        "Watermark_Date_Columns": null,
+        "Watermark_Time_Columns": null,
+        "Where_Clause": null,
+        "Contains_PII": null,
+        "Database_Name": null,
+        "Schema_Name": null,
+        "Column_Mappings": [
+            {
+                "Target_Column": "loss_event_hash_key",
+                "Data_Type": "STRING",
+                "Column_Order": "1",
+                "Is_PK": "Yes",
+                "Is_FK": "No",
+                "Column_Definition": "SHA-256(loss_event_identifier)",
+                "SourceMapping": {
+                    "Source_Table": "crm_loss_event_register_csv, sap_loss_event_db",
+                    "Source_Column": "(loss_event_identifier, source_name), \n(incident_id, source_name)",
+                    "Transformation_Logic": "SELECT HASH(loss_event_identifier, source_name) FROM crm_loss_event_register_csv \nOR\nSELECT HASH(incident_id, source_name) FROM sap_loss_event_db",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "loss_event_id",
+                "Data_Type": "STRING",
+                "Column_Order": "2",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Business key",
+                "SourceMapping": {
+                    "Source_Table": "crm_loss_event_register_csv, sap_loss_event_db",
+                    "Source_Column": "loss_event_identifier, incident_id",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "load_ts",
+                "Data_Type": "TIMESTAMP",
+                "Column_Order": "3",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Load timestamp",
+                "SourceMapping": {
+                    "Source_Table": "crm_loss_event_register_csv, sap_loss_event_db",
+                    "Source_Column": "load_ts, load_ts",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "record_source",
+                "Data_Type": "STRING",
+                "Column_Order": "4",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Source system identifier",
+                "SourceMapping": {
+                    "Source_Table": "crm_loss_event_register_csv, sap_loss_event_db",
+                    "Source_Column": "source_name",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            }
+        ]
+    },
+    {
+        "Target_Table": "hub_medical_assessment",
+        "Target_Table_Type": "Physical Table",
+        "Table_Definition": "",
+        "Source_Data_Vault_Table": null,
+        "Source_Logical_Table": null,
+        "Business_Key": null,
+        "SCD_Type": null,
+        "Table_Type": "hub",
+        "Loading_Order": null,
+        "Dependency": null,
+        "Retention_Type": null,
+        "Retention_Attribute": null,
+        "Retention_Reference_Table": null,
+        "Watermark_Date_Columns": null,
+        "Watermark_Time_Columns": null,
+        "Where_Clause": null,
+        "Contains_PII": null,
+        "Database_Name": null,
+        "Schema_Name": null,
+        "Column_Mappings": [
+            {
+                "Target_Column": "medical_assessment_hash_key",
+                "Data_Type": "STRING",
+                "Column_Order": "1",
+                "Is_PK": "Yes",
+                "Is_FK": "No",
+                "Column_Definition": "SHA-256(medical_assessment_identifier)",
+                "SourceMapping": {
+                    "Source_Table": "crm_medical_assessment_register_csv",
+                    "Source_Column": "medical_assessment_identifier, source_name",
+                    "Transformation_Logic": "HASH(medical_assessment_identifier, source_name)",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "medical_assessment_id",
+                "Data_Type": "STRING",
+                "Column_Order": "2",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Business key",
+                "SourceMapping": {
+                    "Source_Table": "crm_medical_assessment_register_csv",
+                    "Source_Column": "medical_assessment_identifier",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "load_ts",
+                "Data_Type": "TIMESTAMP",
+                "Column_Order": "3",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Load timestamp",
+                "SourceMapping": {
+                    "Source_Table": "crm_medical_assessment_register_csv",
+                    "Source_Column": "load_ts",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "record_source",
+                "Data_Type": "STRING",
+                "Column_Order": "4",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Source system identifier",
+                "SourceMapping": {
+                    "Source_Table": "crm_medical_assessment_register_csv",
+                    "Source_Column": "source_name",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            }
+        ]
+    },
+    {
+        "Target_Table": "hub_medical_condition",
+        "Target_Table_Type": "Physical Table",
+        "Table_Definition": "",
+        "Source_Data_Vault_Table": null,
+        "Source_Logical_Table": null,
+        "Business_Key": null,
+        "SCD_Type": null,
+        "Table_Type": "hub",
+        "Loading_Order": null,
+        "Dependency": null,
+        "Retention_Type": null,
+        "Retention_Attribute": null,
+        "Retention_Reference_Table": null,
+        "Watermark_Date_Columns": null,
+        "Watermark_Time_Columns": null,
+        "Where_Clause": null,
+        "Contains_PII": null,
+        "Database_Name": null,
+        "Schema_Name": null,
+        "Column_Mappings": [
+            {
+                "Target_Column": "medical_condition_hash_key",
+                "Data_Type": "STRING",
+                "Column_Order": "1",
+                "Is_PK": "Yes",
+                "Is_FK": "No",
+                "Column_Definition": "SHA-256(medical_condition_identifier)",
+                "SourceMapping": {
+                    "Source_Table": "crm_medical_condition_catalog_csv",
+                    "Source_Column": "medical_condition_identifier, source_name",
+                    "Transformation_Logic": "HASH(medical_condition_identifier, source_name)",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "medical_condition_id",
+                "Data_Type": "STRING",
+                "Column_Order": "2",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Business key",
+                "SourceMapping": {
+                    "Source_Table": "crm_medical_condition_catalog_csv",
+                    "Source_Column": "medical_condition_identifier",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "load_ts",
+                "Data_Type": "TIMESTAMP",
+                "Column_Order": "3",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Load timestamp",
+                "SourceMapping": {
+                    "Source_Table": "crm_medical_condition_catalog_csv",
+                    "Source_Column": "load_ts",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "record_source",
+                "Data_Type": "STRING",
+                "Column_Order": "4",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Source system identifier",
+                "SourceMapping": {
+                    "Source_Table": "crm_medical_condition_catalog_csv",
+                    "Source_Column": "source_name",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            }
+        ]
+    },
+    {
+        "Target_Table": "hub_medical_report",
+        "Target_Table_Type": "Physical Table",
+        "Table_Definition": "",
+        "Source_Data_Vault_Table": null,
+        "Source_Logical_Table": null,
+        "Business_Key": null,
+        "SCD_Type": null,
+        "Table_Type": "hub",
+        "Loading_Order": null,
+        "Dependency": null,
+        "Retention_Type": null,
+        "Retention_Attribute": null,
+        "Retention_Reference_Table": null,
+        "Watermark_Date_Columns": null,
+        "Watermark_Time_Columns": null,
+        "Where_Clause": null,
+        "Contains_PII": null,
+        "Database_Name": null,
+        "Schema_Name": null,
+        "Column_Mappings": [
+            {
+                "Target_Column": "medical_report_hash_key",
+                "Data_Type": "STRING",
+                "Column_Order": "1",
+                "Is_PK": "Yes",
+                "Is_FK": "No",
+                "Column_Definition": "SHA-256(medical_report_identifier)",
+                "SourceMapping": {
+                    "Source_Table": "crm_medical_report_register_csv",
+                    "Source_Column": "medical_report_identifier, source_name",
+                    "Transformation_Logic": "HASH(medical_report_identifier, source_name)",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "medical_report_id",
+                "Data_Type": "STRING",
+                "Column_Order": "2",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Business key",
+                "SourceMapping": {
+                    "Source_Table": "crm_medical_report_register_csv",
+                    "Source_Column": "medical_report_identifier",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "load_ts",
+                "Data_Type": "TIMESTAMP",
+                "Column_Order": "3",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Load timestamp",
+                "SourceMapping": {
+                    "Source_Table": "crm_medical_report_register_csv",
+                    "Source_Column": "load_ts",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "record_source",
+                "Data_Type": "STRING",
+                "Column_Order": "4",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Source system identifier",
+                "SourceMapping": {
+                    "Source_Table": "crm_medical_report_register_csv",
+                    "Source_Column": "source_name",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            }
+        ]
+    },
+    {
+        "Target_Table": "hub_person",
+        "Target_Table_Type": "Physical Table",
+        "Table_Definition": "",
+        "Source_Data_Vault_Table": null,
+        "Source_Logical_Table": null,
+        "Business_Key": null,
+        "SCD_Type": null,
+        "Table_Type": "hub",
+        "Loading_Order": null,
+        "Dependency": null,
+        "Retention_Type": null,
+        "Retention_Attribute": null,
+        "Retention_Reference_Table": null,
+        "Watermark_Date_Columns": null,
+        "Watermark_Time_Columns": null,
+        "Where_Clause": null,
+        "Contains_PII": null,
+        "Database_Name": null,
+        "Schema_Name": null,
+        "Column_Mappings": [
+            {
+                "Target_Column": "person_hash_key",
+                "Data_Type": "STRING",
+                "Column_Order": "1",
+                "Is_PK": "Yes",
+                "Is_FK": "No",
+                "Column_Definition": "SHA-256(person_identifier)",
+                "SourceMapping": {
+                    "Source_Table": "crm_party_master_csv",
+                    "Source_Column": "person_identifier, source_name",
+                    "Transformation_Logic": "HASH(person_identifier, source_name)",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "person_id",
+                "Data_Type": "STRING",
+                "Column_Order": "2",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Business key",
+                "SourceMapping": {
+                    "Source_Table": "crm_party_master_csv",
+                    "Source_Column": "person_identifier",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "load_ts",
+                "Data_Type": "TIMESTAMP",
+                "Column_Order": "3",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Load timestamp",
+                "SourceMapping": {
+                    "Source_Table": "crm_party_master_csv",
+                    "Source_Column": "load_ts",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "record_source",
+                "Data_Type": "STRING",
+                "Column_Order": "4",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Source system identifier",
+                "SourceMapping": {
+                    "Source_Table": "crm_party_master_csv",
+                    "Source_Column": "source_name",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            }
+        ]
+    },
+    {
+        "Target_Table": "hub_physical_place",
+        "Target_Table_Type": "Physical Table",
+        "Table_Definition": "",
+        "Source_Data_Vault_Table": null,
+        "Source_Logical_Table": null,
+        "Business_Key": null,
+        "SCD_Type": null,
+        "Table_Type": "hub",
+        "Loading_Order": null,
+        "Dependency": null,
+        "Retention_Type": null,
+        "Retention_Attribute": null,
+        "Retention_Reference_Table": null,
+        "Watermark_Date_Columns": null,
+        "Watermark_Time_Columns": null,
+        "Where_Clause": null,
+        "Contains_PII": null,
+        "Database_Name": null,
+        "Schema_Name": null,
+        "Column_Mappings": [
+            {
+                "Target_Column": "physical_place_hash_key",
+                "Data_Type": "STRING",
+                "Column_Order": "1",
+                "Is_PK": "Yes",
+                "Is_FK": "No",
+                "Column_Definition": "SHA-256(physical_place_identifier)",
+                "SourceMapping": {
+                    "Source_Table": "crm_physical_place_register_csv",
+                    "Source_Column": "physical_place_identifier, source_name",
+                    "Transformation_Logic": "HASH(physical_place_identifier, source_name)",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "physical_place_id",
+                "Data_Type": "STRING",
+                "Column_Order": "2",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Business key",
+                "SourceMapping": {
+                    "Source_Table": "crm_physical_place_register_csv",
+                    "Source_Column": "physical_place_identifier",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "load_ts",
+                "Data_Type": "TIMESTAMP",
+                "Column_Order": "3",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Load timestamp",
+                "SourceMapping": {
+                    "Source_Table": "crm_physical_place_register_csv",
+                    "Source_Column": "load_ts",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "record_source",
+                "Data_Type": "STRING",
+                "Column_Order": "4",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Source system identifier",
+                "SourceMapping": {
+                    "Source_Table": "crm_physical_place_register_csv",
+                    "Source_Column": "source_name",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            }
+        ]
+    },
+    {
+        "Target_Table": "hub_police_report",
+        "Target_Table_Type": "Physical Table",
+        "Table_Definition": "",
+        "Source_Data_Vault_Table": null,
+        "Source_Logical_Table": null,
+        "Business_Key": null,
+        "SCD_Type": null,
+        "Table_Type": "hub",
+        "Loading_Order": null,
+        "Dependency": null,
+        "Retention_Type": null,
+        "Retention_Attribute": null,
+        "Retention_Reference_Table": null,
+        "Watermark_Date_Columns": null,
+        "Watermark_Time_Columns": null,
+        "Where_Clause": null,
+        "Contains_PII": null,
+        "Database_Name": null,
+        "Schema_Name": null,
+        "Column_Mappings": [
+            {
+                "Target_Column": "police_report_hash_key",
+                "Data_Type": "STRING",
+                "Column_Order": "1",
+                "Is_PK": "Yes",
+                "Is_FK": "No",
+                "Column_Definition": "SHA-256(police_report_identifier)",
+                "SourceMapping": {
+                    "Source_Table": "crm_police_report_register_csv",
+                    "Source_Column": "police_report_identifier, source_name",
+                    "Transformation_Logic": "HASH(police_report_identifier, source_name)",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "police_report_id",
+                "Data_Type": "STRING",
+                "Column_Order": "2",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Business key",
+                "SourceMapping": {
+                    "Source_Table": "crm_police_report_register_csv",
+                    "Source_Column": "police_report_identifier",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "load_ts",
+                "Data_Type": "TIMESTAMP",
+                "Column_Order": "3",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Load timestamp",
+                "SourceMapping": {
+                    "Source_Table": "crm_police_report_register_csv",
+                    "Source_Column": "load_ts",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "record_source",
+                "Data_Type": "STRING",
+                "Column_Order": "4",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Source system identifier",
+                "SourceMapping": {
+                    "Source_Table": "crm_police_report_register_csv",
+                    "Source_Column": "source_name",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            }
+        ]
+    },
+    {
+        "Target_Table": "hub_policy",
+        "Target_Table_Type": "Physical Table",
+        "Table_Definition": "",
+        "Source_Data_Vault_Table": null,
+        "Source_Logical_Table": null,
+        "Business_Key": null,
+        "SCD_Type": null,
+        "Table_Type": "hub",
+        "Loading_Order": null,
+        "Dependency": null,
+        "Retention_Type": null,
+        "Retention_Attribute": null,
+        "Retention_Reference_Table": null,
+        "Watermark_Date_Columns": null,
+        "Watermark_Time_Columns": null,
+        "Where_Clause": null,
+        "Contains_PII": null,
+        "Database_Name": null,
+        "Schema_Name": null,
+        "Column_Mappings": [
+            {
+                "Target_Column": "policy_hash_key",
+                "Data_Type": "STRING",
+                "Column_Order": "1",
+                "Is_PK": "Yes",
+                "Is_FK": "No",
+                "Column_Definition": "SHA-256(policy_identifier)",
+                "SourceMapping": {
+                    "Source_Table": "crm_policy_register_csv",
+                    "Source_Column": "policy_identifier, source_name",
+                    "Transformation_Logic": "HASH(policy_identifier, source_name)",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "policy_id",
+                "Data_Type": "STRING",
+                "Column_Order": "2",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Business key",
+                "SourceMapping": {
+                    "Source_Table": "crm_policy_register_csv",
+                    "Source_Column": "policy_identifier",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "load_ts",
+                "Data_Type": "TIMESTAMP",
+                "Column_Order": "3",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Load timestamp",
+                "SourceMapping": {
+                    "Source_Table": "crm_policy_register_csv",
+                    "Source_Column": "load_ts",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "record_source",
+                "Data_Type": "STRING",
+                "Column_Order": "4",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Source system identifier",
+                "SourceMapping": {
+                    "Source_Table": "crm_policy_register_csv",
+                    "Source_Column": "source_name",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            }
+        ]
+    },
+    {
+        "Target_Table": "hub_policy_coverage",
+        "Target_Table_Type": "Physical Table",
+        "Table_Definition": "",
+        "Source_Data_Vault_Table": null,
+        "Source_Logical_Table": null,
+        "Business_Key": null,
+        "SCD_Type": null,
+        "Table_Type": "hub",
+        "Loading_Order": null,
+        "Dependency": null,
+        "Retention_Type": null,
+        "Retention_Attribute": null,
+        "Retention_Reference_Table": null,
+        "Watermark_Date_Columns": null,
+        "Watermark_Time_Columns": null,
+        "Where_Clause": null,
+        "Contains_PII": null,
+        "Database_Name": null,
+        "Schema_Name": null,
+        "Column_Mappings": [
+            {
+                "Target_Column": "policy_coverage_hash_key",
+                "Data_Type": "STRING",
+                "Column_Order": "1",
+                "Is_PK": "Yes",
+                "Is_FK": "No",
+                "Column_Definition": "SHA-256(policy_coverage_identifier)",
+                "SourceMapping": {
+                    "Source_Table": "crm_policy_coverage_register_csv",
+                    "Source_Column": "policy_coverage_identifier, source_name",
+                    "Transformation_Logic": "HASH(policy_coverage_identifier, source_name)",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "policy_coverage_id",
+                "Data_Type": "STRING",
+                "Column_Order": "2",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Business key",
+                "SourceMapping": {
+                    "Source_Table": "crm_policy_coverage_register_csv",
+                    "Source_Column": "policy_coverage_identifier",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "load_ts",
+                "Data_Type": "TIMESTAMP",
+                "Column_Order": "3",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Load timestamp",
+                "SourceMapping": {
+                    "Source_Table": "crm_policy_coverage_register_csv",
+                    "Source_Column": "load_ts",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "record_source",
+                "Data_Type": "STRING",
+                "Column_Order": "4",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Source system identifier",
+                "SourceMapping": {
+                    "Source_Table": "crm_policy_coverage_register_csv",
+                    "Source_Column": "source_name",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            }
+        ]
+    },
+    {
+        "Target_Table": "hub_repair",
+        "Target_Table_Type": "Physical Table",
+        "Table_Definition": "",
+        "Source_Data_Vault_Table": null,
+        "Source_Logical_Table": null,
+        "Business_Key": null,
+        "SCD_Type": null,
+        "Table_Type": "hub",
+        "Loading_Order": null,
+        "Dependency": null,
+        "Retention_Type": null,
+        "Retention_Attribute": null,
+        "Retention_Reference_Table": null,
+        "Watermark_Date_Columns": null,
+        "Watermark_Time_Columns": null,
+        "Where_Clause": null,
+        "Contains_PII": null,
+        "Database_Name": null,
+        "Schema_Name": null,
+        "Column_Mappings": [
+            {
+                "Target_Column": "repair_hash_key",
+                "Data_Type": "STRING",
+                "Column_Order": "1",
+                "Is_PK": "Yes",
+                "Is_FK": "No",
+                "Column_Definition": "SHA-256(repair_identifier)",
+                "SourceMapping": {
+                    "Source_Table": "crm_repair_register_csv",
+                    "Source_Column": "repair_identifier, source_name",
+                    "Transformation_Logic": "HASH(repair_identifier, source_name)",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "repair_id",
+                "Data_Type": "STRING",
+                "Column_Order": "2",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Business key",
+                "SourceMapping": {
+                    "Source_Table": "crm_repair_register_csv",
+                    "Source_Column": "repair_identifier",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "load_ts",
+                "Data_Type": "TIMESTAMP",
+                "Column_Order": "3",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Load timestamp",
+                "SourceMapping": {
+                    "Source_Table": "crm_repair_register_csv",
+                    "Source_Column": "load_ts",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "record_source",
+                "Data_Type": "STRING",
+                "Column_Order": "4",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Source system identifier",
+                "SourceMapping": {
+                    "Source_Table": "crm_repair_register_csv",
+                    "Source_Column": "source_name",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            }
+        ]
+    },
+    {
+        "Target_Table": "hub_settlement",
+        "Target_Table_Type": "Physical Table",
+        "Table_Definition": "",
+        "Source_Data_Vault_Table": null,
+        "Source_Logical_Table": null,
+        "Business_Key": null,
+        "SCD_Type": null,
+        "Table_Type": "hub",
+        "Loading_Order": null,
+        "Dependency": null,
+        "Retention_Type": null,
+        "Retention_Attribute": null,
+        "Retention_Reference_Table": null,
+        "Watermark_Date_Columns": null,
+        "Watermark_Time_Columns": null,
+        "Where_Clause": null,
+        "Contains_PII": null,
+        "Database_Name": null,
+        "Schema_Name": null,
+        "Column_Mappings": [
+            {
+                "Target_Column": "settlement_hash_key",
+                "Data_Type": "STRING",
+                "Column_Order": "1",
+                "Is_PK": "Yes",
+                "Is_FK": "No",
+                "Column_Definition": "SHA-256(settlement_identifier)",
+                "SourceMapping": {
+                    "Source_Table": "crm_settlement_register_csv",
+                    "Source_Column": "settlement_identifier, source_name",
+                    "Transformation_Logic": "HASH(settlement_identifier, source_name)",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "settlement_id",
+                "Data_Type": "STRING",
+                "Column_Order": "2",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Business key",
+                "SourceMapping": {
+                    "Source_Table": "crm_settlement_register_csv",
+                    "Source_Column": "settlement_identifier",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "load_ts",
+                "Data_Type": "TIMESTAMP",
+                "Column_Order": "3",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Load timestamp",
+                "SourceMapping": {
+                    "Source_Table": "crm_settlement_register_csv",
+                    "Source_Column": "load_ts",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "record_source",
+                "Data_Type": "STRING",
+                "Column_Order": "4",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Source system identifier",
+                "SourceMapping": {
+                    "Source_Table": "crm_settlement_register_csv",
+                    "Source_Column": "source_name",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            }
+        ]
+    },
+    {
+        "Target_Table": "hub_treatment",
+        "Target_Table_Type": "Physical Table",
+        "Table_Definition": "",
+        "Source_Data_Vault_Table": null,
+        "Source_Logical_Table": null,
+        "Business_Key": null,
+        "SCD_Type": null,
+        "Table_Type": "hub",
+        "Loading_Order": null,
+        "Dependency": null,
+        "Retention_Type": null,
+        "Retention_Attribute": null,
+        "Retention_Reference_Table": null,
+        "Watermark_Date_Columns": null,
+        "Watermark_Time_Columns": null,
+        "Where_Clause": null,
+        "Contains_PII": null,
+        "Database_Name": null,
+        "Schema_Name": null,
+        "Column_Mappings": [
+            {
+                "Target_Column": "treatment_hash_key",
+                "Data_Type": "STRING",
+                "Column_Order": "1",
+                "Is_PK": "Yes",
+                "Is_FK": "No",
+                "Column_Definition": "SHA-256(treatment_identifier)",
+                "SourceMapping": {
+                    "Source_Table": "crm_treatment_register_csv",
+                    "Source_Column": "treatment_identifier, source_name",
+                    "Transformation_Logic": "HASH(treatment_identifier, source_name)",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "treatment_id",
+                "Data_Type": "STRING",
+                "Column_Order": "2",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Business key",
+                "SourceMapping": {
+                    "Source_Table": "crm_treatment_register_csv",
+                    "Source_Column": "treatment_identifier",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "load_ts",
+                "Data_Type": "TIMESTAMP",
+                "Column_Order": "3",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Load timestamp",
+                "SourceMapping": {
+                    "Source_Table": "crm_treatment_register_csv",
+                    "Source_Column": "load_ts",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            },
+            {
+                "Target_Column": "record_source",
+                "Data_Type": "STRING",
+                "Column_Order": "4",
+                "Is_PK": "No",
+                "Is_FK": "No",
+                "Column_Definition": "Source system identifier",
+                "SourceMapping": {
+                    "Source_Table": "crm_treatment_register_csv",
+                    "Source_Column": "source_name",
+                    "Transformation_Logic": "Direct one-to-one mapping",
+                    "Filter_Rule": null
+                }
+            }
+        ]
+    }
+]
