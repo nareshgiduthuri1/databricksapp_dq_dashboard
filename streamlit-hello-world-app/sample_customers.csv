@@ -1,0 +1,16 @@
+customer_id,full_name,email_address,phone_number,country,annual_revenue,credit_score,signup_date,status
+CUST_1001,Acme Corporation,contact@acme.com,+1-555-0192,USA,1250000,740,2024-01-15,Active
+CUST_1002,Global Logistics,info@globallogistics.com,+1-555-0193,Germany,840000,680,2024-02-20,Active
+CUST_1003,Starlight Media,invalid-email-format,+44-20-7946-0912,UK,450000,710,2024-03-05,Active
+CUST_1004,Apex Financials,billing@apexfin.com,+1-555-0195,USA,-15000,620,2024-03-12,Active
+CUST_1005,Nexus Tech Labs,hello@nexustech.io,,Germany,2100000,790,2024-04-01,Active
+CUST_1006,Summit Retail,support@summitretail.com,+1-555-0197,USA,320000,590,2024-04-18,Pending
+CUST_1007,Horizon Energy,contact@horizonenergy.com,+33-1-40-50-60,France,5600000,820,2024-05-02,Active
+CUST_1008,Pioneer Healthcare,,+1-555-0199,USA,980000,705,2024-05-19,Active
+CUST_1009,Vanguard Industrial,ops@vanguardind.com,+49-30-123456,Germany,1750000,980,2024-06-11,Active
+CUST_1010,Cascade Cloud,admin@cascadecloud.net,+1-555-0201,USA,640000,670,2028-05-10,Active
+CUST_1001,Acme Corporation,contact@acme.com,+1-555-0192,USA,1250000,740,2024-01-15,Active
+CUST_1012,Quantum Dynamics,info@quantumdyn.com,,Japan,3400000,775,2024-07-04,Active
+CUST_1013,Beacon Security,alerts@beaconsec.com,+1-555-0204,N/A,410000,650,2024-07-22,Pending
+CUST_1014,Solaris Agriculture,contact@solaris,,Australia,890000,695,2024-08-14,Active
+CUST_1015,Echo Wave Telecom,support@echowave.com,+1-555-0206,USA,1120000,715,2024-08-30,Active
